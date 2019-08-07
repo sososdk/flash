@@ -17,7 +17,7 @@ Future<T> showFlashbar<T>({
   @required FlashbarBuilder builder,
   Duration duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
-  bool isPersistent = false,
+  bool isPersistent = true,
   WillPopCallback onWillPop,
 }) {
   return FlashbarController(
@@ -31,7 +31,7 @@ Future<T> showFlashbar<T>({
 }
 
 class FlashbarController<T> {
-  final OverlayState overlay;
+  OverlayState overlay;
   final ModalRoute route;
   final BuildContext context;
   final FlashbarBuilder builder;
@@ -42,7 +42,26 @@ class FlashbarController<T> {
   /// Use it to speed up or slow down the animation duration
   final Duration transitionDuration;
 
-  /// FIXED: add doc
+  /// Whether this flashbar is add to route.
+  ///
+  /// Must be non-null, defaults to `true`
+  ///
+  /// If `true` the flashbar will not add to route.
+  ///
+  /// If `false`, the flashbar will add to route as a [LocalHistoryEntry]. Typically the page is wrap with Overlay.
+  ///
+  /// This can be useful in situations where the app needs to dismiss the flashbar with [Navigator.pop].
+  ///
+  /// ```dart
+  /// Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+  ///   return Overlay(
+  ///     initialEntries: [
+  ///       OverlayEntry(builder: (context) {
+  ///         return FlashbarPage();
+  ///       }),
+  ///     ],
+  ///   );
+  /// ```
   final bool isPersistent;
 
   /// Called to veto attempts by the user to dismiss the enclosing [ModalRoute].
@@ -66,13 +85,17 @@ class FlashbarController<T> {
     this.builder, {
     this.duration,
     this.transitionDuration = const Duration(milliseconds: 500),
-    this.isPersistent = false,
+    this.isPersistent = true,
     this.onWillPop,
   })  : assert(context != null),
         assert(builder != null),
         assert(isPersistent != null),
-        overlay = Overlay.of(context),
         route = ModalRoute.of(context) {
+    if (!isPersistent) {
+      overlay = Overlay.of(context);
+    }
+    overlay ??= Navigator.of(context).overlay;
+    assert(overlay != null);
     _controller = createAnimationController()
       ..addStatusListener(_handleStatusChanged);
   }
@@ -94,7 +117,7 @@ class FlashbarController<T> {
     overlay.insertAll(_overlayEntries = _createOverlayEntries());
     _controller.forward();
     _configureTimer();
-    _configureLocalHistory();
+    _configurePersistent();
 
     return popped;
   }
@@ -147,8 +170,8 @@ class FlashbarController<T> {
     return overlays;
   }
 
-  void _configureLocalHistory() {
-    if (isPersistent) {
+  void _configurePersistent() {
+    if (!isPersistent) {
       _historyEntry = LocalHistoryEntry(onRemove: () {
         assert(!_transitionCompleter.isCompleted,
             'Cannot reuse a $runtimeType after disposing it.');
@@ -159,12 +182,12 @@ class FlashbarController<T> {
           _controller.reverse();
         }
       });
-      ModalRoute.of(context).addLocalHistoryEntry(_historyEntry);
+      route?.addLocalHistoryEntry(_historyEntry);
     }
   }
 
   void _removeLocalHistory() {
-    if (isPersistent && !_removedHistoryEntry) {
+    if (!isPersistent && !_removedHistoryEntry) {
       _historyEntry.remove();
       _removedHistoryEntry = true;
     }
@@ -234,8 +257,6 @@ class Flashbar<T extends Object> extends StatefulWidget {
     @required this.controller,
     this.title,
     this.message,
-    this.titleText,
-    this.messageText,
     this.icon,
     this.shouldIconPulse = true,
     this.margin = const EdgeInsets.all(0.0),
@@ -243,11 +264,12 @@ class Flashbar<T extends Object> extends StatefulWidget {
     this.borderRadius,
     this.borderColor,
     this.borderWidth = 1.0,
-    this.backgroundColor = const Color(0xFF303030),
+    this.backgroundColor,
     this.leftBarIndicatorColor,
     this.boxShadows,
     this.backgroundGradient,
     this.primaryAction,
+    this.actions,
     this.onTap,
     this.enableDrag = true,
     this.showProgressIndicator = false,
@@ -258,28 +280,30 @@ class Flashbar<T extends Object> extends StatefulWidget {
     this.flashbarStyle = FlashbarStyle.FLOATING,
     this.forwardAnimationCurve = Curves.fastLinearToSlowEaseIn,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
-    this.animationDuration = const Duration(seconds: 1),
-    this.overlayBlur,
-    this.overlayColor,
+    this.barrierBlur,
+    this.barrierColor,
+    this.barrierDismissible = true,
     this.userInputForm,
   })  : assert(controller != null),
+        assert(barrierDismissible != null),
         super(key: key);
 
   final FlashbarController controller;
 
-  /// The title displayed to the user
-  final String title;
+  /// The (optional) title of the flashbar is displayed in a large font at the top
+  /// of the flashbar.
+  ///
+  /// Typically a [Text] widget.
+  final Widget title;
 
-  /// The message displayed to the user.
-  final String message;
-
-  /// Replaces [title]. Although this accepts a [Widget], it is meant to receive [Text] or [RichText]
-  final Widget titleText;
-
-  /// Replaces [message]. Although this accepts a [Widget], it is meant to receive [Text] or  [RichText]
-  final Widget messageText;
+  /// The message of the flashbar is displayed in the center of the flashbar in
+  /// a lighter font.
+  ///
+  /// Typically a [Text] widget.
+  final Widget message;
 
   /// Will be ignored if [backgroundGradient] is not null
+  /// {@macro flutter.material.dialog.backgroundColor}
   final Color backgroundColor;
 
   /// If not null, shows a left vertical bar to better indicate the humor of the notification.
@@ -303,6 +327,14 @@ class Flashbar<T extends Object> extends StatefulWidget {
 
   /// A widget if you need an action from the user.
   final Widget primaryAction;
+
+  /// The (optional) set of actions that are displayed at the bottom of the flashbar.
+  ///
+  /// Typically this is a list of [FlatButton] widgets.
+  ///
+  /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
+  /// of padding on each side.
+  final List<Widget> actions;
 
   /// A callback that registers the user's click anywhere. An alternative to [primaryAction]
   final GestureTapCallback onTap;
@@ -332,11 +364,9 @@ class Flashbar<T extends Object> extends StatefulWidget {
   final EdgeInsets padding;
 
   /// Adds a radius to all corners of Flashbar. Best combined with [margin].
-  /// I do not recommend using it with [showProgressIndicator] or [leftBarIndicatorColor].
   final BorderRadius borderRadius;
 
   /// Adds a border to every side of Flashbar
-  /// I do not recommend using it with [showProgressIndicator] or [leftBarIndicatorColor].
   final Color borderColor;
 
   /// Changes the width of the border if [borderColor] is specified
@@ -356,17 +386,31 @@ class Flashbar<T extends Object> extends StatefulWidget {
   /// The [Curve] animation used when dismiss() is called. [Curves.fastOutSlowIn] is default
   final Curve reverseAnimationCurve;
 
-  /// Use it to speed up or slow down the animation duration
-  final Duration animationDuration;
-
-  /// Only takes effect if [FlashbarController.isPersistent] is true.
+  /// Only takes effect if [FlashbarController.isPersistent] is false.
   /// Creates a blurred overlay that prevents the user from interacting with the screen.
   /// The greater the value, the greater the blur.
-  final double overlayBlur;
+  final double barrierBlur;
 
-  /// Only takes effect if [FlashbarController.isPersistent] is true.
+  /// Only takes effect if [FlashbarController.isPersistent] is false.
   /// Make sure you use a color with transparency here e.g. Colors.grey[600].withOpacity(0.2).
-  final Color overlayColor;
+  final Color barrierColor;
+
+  /// Only takes effect if [FlashbarController.isPersistent] is false, and [barrierBlur] or [barrierColor] is not null.
+  /// Whether you can dismiss this flashbar by tapping the modal barrier.
+  ///
+  /// For example, when a dialog is on the screen, the page below the dialog is
+  /// usually darkened by the modal barrier.
+  ///
+  /// If [barrierDismissible] is true, then tapping this barrier will cause the
+  /// current flashbar to be dismiss (see [FlashbarController.dismiss]) with null as the value.
+  ///
+  /// If [barrierDismissible] is false, then tapping the barrier has no effect.
+  ///
+  /// See also:
+  ///
+  ///  * [barrierBlur], which controls the blur of the scrim for this flashbar.
+  ///  * [barrierColor], which controls the color of the scrim for this flashbar.
+  final bool barrierDismissible;
 
   /// A [TextFormField] in case you want a simple user input. Every other widget is ignored if this is not null.
   final Form userInputForm;
@@ -382,7 +426,6 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
   AnimationController _fadeController;
   Animation<double> _fadeAnimation;
 
-  final Widget _emptyWidget = SizedBox(width: 0.0, height: 0.0);
   final double _initialOpacity = 1.0;
   final double _finalOpacity = 0.4;
 
@@ -413,13 +456,10 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
   void initState() {
     super.initState();
 
-    assert(
-        widget.userInputForm != null ||
-            widget.message?.isNotEmpty == true ||
-            widget.messageText != null,
+    assert(widget.userInputForm != null || widget.message != null,
         "A message is mandatory if you are not using userInputForm. Set either a message or messageText");
 
-    _isTitlePresent = (widget.title != null || widget.titleText != null);
+    _isTitlePresent = (widget.title != null);
     _messageTopMargin = _isTitlePresent ? 6.0 : widget.padding.top;
 
     _configureProgressIndicatorAnimation();
@@ -433,7 +473,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
     _focusAttachment = _focusNode.attach(context);
 
     animationController.addStatusListener(_handleStatusChanged);
-    _slideAnimation = _animation = createAnimation();
+    _slideAnimation = _animation = _createAnimation();
   }
 
   @override
@@ -488,6 +528,18 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
   bool get _dismissUnderway =>
       animationController.status == AnimationStatus.reverse;
 
+  Color get backgroundColor {
+    return widget.backgroundColor ??
+        (Theme.of(context).brightness == Brightness.dark
+            ? Colors.white
+            : const Color(0xFF333333));
+  }
+
+  bool _isDarkBackground() {
+    return ThemeData.estimateBrightnessForColor(backgroundColor) ==
+        Brightness.dark;
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget child = _getFlashbar();
@@ -503,7 +555,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
         );
       }
       child = Material(
-        color: widget.backgroundColor,
+        color: backgroundColor,
         type: widget.flashbarStyle == FlashbarStyle.GROUNDED
             ? MaterialType.canvas
             : MaterialType.transparency,
@@ -546,8 +598,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
     if (widget.flashbarStyle != FlashbarStyle.FLOATING) {
       child = AnnotatedRegion<SystemUiOverlayStyle>(
           child: child,
-          value: ThemeData.estimateBrightnessForColor(widget.backgroundColor) ==
-                  Brightness.dark
+          value: _isDarkBackground()
               ? SystemUiOverlayStyle.light
               : SystemUiOverlayStyle.dark);
     }
@@ -561,15 +612,15 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
       child: child,
     );
 
-    var overlayBlur = widget.overlayBlur;
-    var overlayColor = widget.overlayColor;
+    var overlayBlur = widget.barrierBlur;
+    var overlayColor = widget.barrierColor;
     child = Semantics(
       focused: false,
       scopesRoute: true,
       explicitChildNodes: true,
       child: Stack(
         children: <Widget>[
-          if (controller.isPersistent &&
+          if (!controller.isPersistent &&
               (overlayBlur != null || overlayColor != null))
             AnimatedBuilder(
               animation: animationController,
@@ -577,15 +628,21 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                 var value = animationController.value;
                 overlayBlur ??= 0.0;
                 overlayColor ??= Colors.transparent;
-                return BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: overlayBlur * value,
-                    sigmaY: overlayBlur * value,
-                  ),
-                  child: Container(
-                    constraints: BoxConstraints.expand(),
-                    color:
-                        overlayColor.withOpacity(overlayColor.opacity * value),
+                return GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: widget.barrierDismissible
+                      ? () => controller.dismiss()
+                      : null,
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: overlayBlur * value,
+                      sigmaY: overlayBlur * value,
+                    ),
+                    child: Container(
+                      constraints: BoxConstraints.expand(),
+                      color: overlayColor
+                          .withOpacity(overlayColor.opacity * value),
+                    ),
                   ),
                 );
               },
@@ -614,7 +671,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
 
     child = Ink(
       decoration: BoxDecoration(
-        color: widget.backgroundColor,
+        color: backgroundColor,
         gradient: widget.backgroundGradient,
         borderRadius: widget.borderRadius,
         border: widget.borderColor != null
@@ -625,7 +682,8 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
     );
 
     if (widget.onTap != null) {
-      child = InkWell(
+      child = GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: widget.onTap,
         child: child,
       );
@@ -639,15 +697,14 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        widget.showProgressIndicator
-            ? LinearProgressIndicator(
-                value: widget.progressIndicatorController != null
-                    ? _progressAnimation.value
-                    : null,
-                backgroundColor: widget.progressIndicatorBackgroundColor,
-                valueColor: widget.progressIndicatorValueColor,
-              )
-            : _emptyWidget,
+        if (widget.showProgressIndicator)
+          LinearProgressIndicator(
+            value: widget.progressIndicatorController != null
+                ? _progressAnimation.value
+                : null,
+            backgroundColor: widget.progressIndicatorBackgroundColor,
+            valueColor: widget.progressIndicatorValueColor,
+          ),
         IntrinsicHeight(
           child: Row(
               mainAxisSize: MainAxisSize.max,
@@ -672,23 +729,25 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
 
     if (widget.icon == null && widget.primaryAction == null) {
       return [
-        _buildLeftBarIndicator(),
+        if (widget.leftBarIndicatorColor != null)
+          Container(
+            color: widget.leftBarIndicatorColor,
+            width: 5.0,
+          ),
         Expanded(
-          flex: 1,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              (_isTitlePresent)
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: widget.padding.top,
-                        left: widget.padding.left,
-                        right: widget.padding.right,
-                      ),
-                      child: _getTitle(),
-                    )
-                  : _emptyWidget,
+              if (_isTitlePresent)
+                Padding(
+                  padding: EdgeInsets.only(
+                    top: widget.padding.top,
+                    left: widget.padding.left,
+                    right: widget.padding.right,
+                  ),
+                  child: _getTitle(),
+                ),
               Padding(
                 padding: EdgeInsets.only(
                   top: _messageTopMargin,
@@ -698,204 +757,275 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                 ),
                 child: _getMessage(),
               ),
+              if (widget.actions != null)
+                ButtonTheme.bar(
+                  padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
+                  child: ButtonBar(
+                    children: widget.actions,
+                  ),
+                ),
             ],
           ),
         ),
       ];
     } else if (widget.icon != null && widget.primaryAction == null) {
       return <Widget>[
-        _buildLeftBarIndicator(),
-        ConstrainedBox(
-          constraints: BoxConstraints.tightFor(width: 42.0 + iconPadding),
-          child: _getIcon(),
-        ),
+        if (widget.leftBarIndicatorColor != null)
+          Container(
+            color: widget.leftBarIndicatorColor,
+            width: 5.0,
+          ),
         Expanded(
-          flex: 1,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              (_isTitlePresent)
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: widget.padding.top,
-                        left: 4.0,
-                        right: widget.padding.left,
-                      ),
-                      child: _getTitle(),
-                    )
-                  : _emptyWidget,
-              Padding(
-                padding: EdgeInsets.only(
-                  top: _messageTopMargin,
-                  left: 4.0,
-                  right: widget.padding.right,
-                  bottom: widget.padding.bottom,
-                ),
-                child: _getMessage(),
+              Row(
+                children: <Widget>[
+                  ConstrainedBox(
+                    constraints: BoxConstraints(minWidth: 42.0 + iconPadding),
+                    child: _getIcon(),
+                  ),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (_isTitlePresent)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: widget.padding.top,
+                              left: 4.0,
+                              right: widget.padding.left,
+                            ),
+                            child: _getTitle(),
+                          ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: _messageTopMargin,
+                            left: 4.0,
+                            right: widget.padding.right,
+                            bottom: widget.padding.bottom,
+                          ),
+                          child: _getMessage(),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
+              if (widget.actions != null)
+                ButtonTheme.bar(
+                  padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
+                  child: ButtonBar(
+                    children: widget.actions,
+                  ),
+                ),
             ],
           ),
         ),
       ];
     } else if (widget.icon == null && widget.primaryAction != null) {
       return <Widget>[
-        _buildLeftBarIndicator(),
+        if (widget.leftBarIndicatorColor != null)
+          Container(
+            color: widget.leftBarIndicatorColor,
+            width: 5.0,
+          ),
         Expanded(
-          flex: 1,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              (_isTitlePresent)
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: widget.padding.top,
-                        left: widget.padding.left,
-                        right: widget.padding.right,
-                      ),
-                      child: _getTitle(),
-                    )
-                  : _emptyWidget,
-              Padding(
-                padding: EdgeInsets.only(
-                  top: _messageTopMargin,
-                  left: widget.padding.left,
-                  right: 8.0,
-                  bottom: widget.padding.bottom,
-                ),
-                child: _getMessage(),
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        if (_isTitlePresent)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: widget.padding.top,
+                              left: widget.padding.left,
+                              right: widget.padding.right,
+                            ),
+                            child: _getTitle(),
+                          ),
+                        Padding(
+                          padding: EdgeInsets.only(
+                            top: _messageTopMargin,
+                            left: widget.padding.left,
+                            right: 4.0,
+                            bottom: widget.padding.bottom,
+                          ),
+                          child: _getMessage(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: EdgeInsets.only(right: buttonRightPadding),
+                    child: _getPrimaryAction(),
+                  ),
+                ],
               ),
+              if (widget.actions != null)
+                ButtonTheme.bar(
+                  padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
+                  child: ButtonBar(
+                    children: widget.actions,
+                  ),
+                ),
             ],
           ),
-        ),
-        Padding(
-          padding: EdgeInsets.only(right: buttonRightPadding),
-          child: _getMainActionButton(),
         ),
       ];
     } else {
       return <Widget>[
-        _buildLeftBarIndicator(),
-        ConstrainedBox(
-          constraints: BoxConstraints.tightFor(width: 42.0 + iconPadding),
-          child: _getIcon(),
-        ),
+        if (widget.leftBarIndicatorColor != null)
+          Container(
+            color: widget.leftBarIndicatorColor,
+            width: 5.0,
+          ),
         Expanded(
-          flex: 1,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              (_isTitlePresent)
-                  ? Padding(
-                      padding: EdgeInsets.only(
-                        top: widget.padding.top,
-                        left: 4.0,
-                        right: 8.0,
+              Expanded(
+                child: Row(
+                  children: <Widget>[
+                    ConstrainedBox(
+                      constraints: BoxConstraints(minWidth: 42.0 + iconPadding),
+                      child: _getIcon(),
+                    ),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        mainAxisSize: MainAxisSize.min,
+                        children: <Widget>[
+                          if (_isTitlePresent)
+                            Padding(
+                              padding: EdgeInsets.only(
+                                top: widget.padding.top,
+                                left: 4.0,
+                                right: 4.0,
+                              ),
+                              child: _getTitle(),
+                            ),
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: _messageTopMargin,
+                              left: 4.0,
+                              right: 4.0,
+                              bottom: widget.padding.bottom,
+                            ),
+                            child: _getMessage(),
+                          ),
+                        ],
                       ),
-                      child: _getTitle(),
-                    )
-                  : _emptyWidget,
-              Padding(
-                padding: EdgeInsets.only(
-                  top: _messageTopMargin,
-                  left: 4.0,
-                  right: 8.0,
-                  bottom: widget.padding.bottom,
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(right: buttonRightPadding),
+                      child: _getPrimaryAction(),
+                    ),
+                  ],
                 ),
-                child: _getMessage(),
               ),
+              if (widget.actions != null)
+                ButtonTheme.bar(
+                  padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
+                  child: ButtonBar(
+                    children: widget.actions,
+                  ),
+                ),
             ],
           ),
         ),
-        Padding(
-              padding: EdgeInsets.only(right: buttonRightPadding),
-              child: _getMainActionButton(),
-            ) ??
-            _emptyWidget,
       ];
     }
   }
 
-  Widget _getMessage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        if (widget.messageText != null)
-          widget.messageText
-        else if (widget.message?.isNotEmpty == true)
-          _getDefaultNotificationText(),
-        if (widget.userInputForm != null)
-          FocusScope(
-            child: widget.userInputForm,
-            node: _focusNode,
-            autofocus: true,
-          ),
-      ],
-    );
-  }
-
-  Widget _buildLeftBarIndicator() {
-    if (widget.leftBarIndicatorColor != null) {
-      return Container(
-        color: widget.leftBarIndicatorColor,
-        width: 5.0,
-      );
-    } else {
-      return _emptyWidget;
-    }
-  }
-
   Widget _getIcon() {
-    if (widget.icon != null && widget.icon is Icon && widget.shouldIconPulse) {
-      return FadeTransition(
+    assert(widget.icon != null);
+    Widget child;
+    if (widget.icon is Icon && widget.shouldIconPulse) {
+      child = FadeTransition(
         opacity: _fadeAnimation,
         child: widget.icon,
       );
-    } else if (widget.icon != null) {
-      return widget.icon;
     } else {
-      return _emptyWidget;
+      child = widget.icon;
     }
-  }
-
-  Widget _getTitle() {
-    return widget.titleText != null
-        ? widget.titleText
-        : Text(
-            widget.title ?? "",
-            style: TextStyle(
-                fontSize: 16.0,
-                color: Colors.white,
-                fontWeight: FontWeight.bold),
-          );
-  }
-
-  Text _getDefaultNotificationText() {
-    return Text(
-      widget.message,
-      style: TextStyle(fontSize: 14.0, color: Colors.white),
+    var theme = Theme.of(context);
+    var buttonTheme = ButtonTheme.of(context);
+    return IconTheme(
+      data: theme.iconTheme.copyWith(color: buttonTheme.colorScheme.primary),
+      child: child,
     );
   }
 
-  Widget _getMainActionButton() {
-    if (widget.primaryAction != null) {
-      return widget.primaryAction;
-    } else {
-      return null;
-    }
+  Widget _getTitle() {
+    return DefaultTextStyle(
+      style: _getTitleStyle(),
+      child: Semantics(
+        child: widget.title,
+        namesRoute: true,
+        container: true,
+      ),
+    );
+  }
+
+  TextStyle _getTitleStyle() {
+    final ThemeData theme = Theme.of(context);
+    final DialogTheme dialogTheme = DialogTheme.of(context);
+    return (dialogTheme.titleTextStyle ?? theme.textTheme.title)
+        .copyWith(color: _isDarkBackground() ? Colors.white : Colors.black87);
+  }
+
+  Widget _getMessage() {
+    return DefaultTextStyle(
+      style: _getMessageStyle(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          if (widget.message != null) widget.message,
+          if (widget.userInputForm != null)
+            FocusScope(
+              child: widget.userInputForm,
+              node: _focusNode,
+              autofocus: true,
+            ),
+        ],
+      ),
+    );
+  }
+
+  TextStyle _getMessageStyle() {
+    final ThemeData theme = Theme.of(context);
+    final DialogTheme dialogTheme = DialogTheme.of(context);
+    return (dialogTheme.contentTextStyle ?? theme.textTheme.subhead)
+        .copyWith(color: _isDarkBackground() ? Colors.white : Colors.black87);
+  }
+
+  Widget _getPrimaryAction() {
+    assert(widget.primaryAction != null);
+    var buttonTheme = ButtonTheme.of(context);
+    return ButtonTheme(
+      textTheme: ButtonTextTheme.primary,
+      child: IconTheme(
+        data: Theme.of(context)
+            .iconTheme
+            .copyWith(color: buttonTheme.colorScheme.primary),
+        child: widget.primaryAction,
+      ),
+    );
   }
 
   /// Called to create the animation that exposes the current progress of
   /// the transition controlled by the animation controller created by
-  /// [createAnimationController].
-  Animation<double> createAnimation() {
+  /// [FlashbarController.createAnimationController].
+  Animation<double> _createAnimation() {
     assert(animationController != null);
     return CurvedAnimation(
       parent: animationController.view,
       curve: widget.forwardAnimationCurve,
-      // only the reverseCurve will be used
       reverseCurve: widget.reverseAnimationCurve,
     );
   }

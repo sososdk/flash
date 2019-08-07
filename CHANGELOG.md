@@ -1,3 +1,4 @@
-## [0.0.1] - TODO: Add release date.
+## [1.0.0] - 2019-8-7
 
-* TODO: Describe initial release.
+### Added
+- Flashbar creation
