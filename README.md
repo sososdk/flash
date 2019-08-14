@@ -52,7 +52,11 @@ every feature of the library.
 It is recommended to check the sample project to get a complete
 understanding of all the features offered by the library.
 
-![image](https://user-images.githubusercontent.com/46806014/62988723-f27a5580-be77-11e9-93b5-d415041ee93d.png)
+![basic](https://raw.githubusercontent.com/sososdk/tool/master/flash/basic.gif)
+![top](https://raw.githubusercontent.com/sososdk/tool/master/flash/top.gif)
+![bottom](https://raw.githubusercontent.com/sososdk/tool/master/flash/bottom.gif)
+![toast](https://raw.githubusercontent.com/sososdk/tool/master/flash/toast.gif)
+![dialog](https://raw.githubusercontent.com/sososdk/tool/master/flash/dialog.gif)
 
 # Roadmap
 These are some of the prioritized features in the pipeline awaiting to
