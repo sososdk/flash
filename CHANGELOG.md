@@ -1,3 +1,8 @@
+## [1.1.0+1] - 2019-8-14
+
+### Fixes
+- Fixed animation dismissed but `dismissInternal()` not called.
+
 ## [1.1.0] - 2019-8-13
 
 ### Changed

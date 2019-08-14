@@ -217,9 +217,7 @@ class FlashController<T> {
   }
 
   @protected
-  void dismissManual() {
-    assert(!_transitionCompleter.isCompleted,
-        'Cannot reuse a $runtimeType after disposing it.');
+  void dismissInternal() {
     _dismissed = true;
     if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop);
     _removeLocalHistory();
@@ -241,6 +239,8 @@ class FlashController<T> {
   void dispose() {
     assert(!_transitionCompleter.isCompleted,
         'Cannot dispose a $runtimeType twice.');
+    dismissInternal();
+
     for (OverlayEntry entry in _overlayEntries) entry.remove();
     _overlayEntries.clear();
     _controller.dispose();
@@ -476,7 +476,7 @@ class _FlashState<K extends Object> extends State<Flash> {
       child: child,
     );
 
-    if (widget.position == FlashPosition.top) {
+    if (widget.position != FlashPosition.center) {
       child = AnnotatedRegion<SystemUiOverlayStyle>(
         value:
             _isDark() ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -638,19 +638,20 @@ class _FlashState<K extends Object> extends State<Flash> {
       if (animationController.value > 0.0) {
         animationController.fling(velocity: flingVelocity);
       }
-      controller.dismissManual();
-    } else if (widget.position == FlashPosition.bottom &&
+      controller.dismissInternal();
+    } else if ((widget.position == FlashPosition.center ||
+            widget.position == FlashPosition.bottom) &&
         details.velocity.pixelsPerSecond.dy > _minFlingVelocity) {
       final double flingVelocity =
           -details.velocity.pixelsPerSecond.dy / _childHeight;
       if (animationController.value > 0.0) {
         animationController.fling(velocity: flingVelocity);
       }
-      controller.dismissManual();
+      controller.dismissInternal();
     } else if (animationController.value < _closeProgressThreshold) {
       if (animationController.value > 0.0)
         animationController.fling(velocity: -1.0);
-      controller.dismissManual();
+      controller.dismissInternal();
     } else {
       animationController.forward();
     }
