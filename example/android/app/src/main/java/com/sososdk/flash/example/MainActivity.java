@@ -1,4 +1,4 @@
-package com.example.example;
+package com.sososdk.flash.example;
 
 import android.os.Bundle;
 import io.flutter.app.FlutterActivity;

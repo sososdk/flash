@@ -1,4 +1,4 @@
-library flashbar;
+library flash;
 
 import 'dart:async';
 import 'dart:ui';
@@ -9,60 +9,60 @@ import 'package:flutter/services.dart';
 const double _minFlingVelocity = 700.0;
 const double _closeProgressThreshold = 0.5;
 
-typedef FlashbarBuilder = Widget Function(
-    BuildContext context, FlashbarController controller);
+typedef FlashBuilder = Widget Function(
+    BuildContext context, FlashController controller);
 
-Future<T> showFlashbar<T>({
+Future<T> showFlash<T>({
   @required BuildContext context,
-  @required FlashbarBuilder builder,
+  @required FlashBuilder builder,
   Duration duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
-  bool isPersistent = true,
+  bool persistent = true,
   WillPopCallback onWillPop,
 }) {
-  return FlashbarController(
+  return FlashController(
     context,
     builder,
     duration: duration,
     transitionDuration: transitionDuration,
-    isPersistent: isPersistent,
+    persistent: persistent,
     onWillPop: onWillPop,
   ).show();
 }
 
-class FlashbarController<T> {
+class FlashController<T> {
   OverlayState overlay;
   final ModalRoute route;
   final BuildContext context;
-  final FlashbarBuilder builder;
+  final FlashBuilder builder;
 
-  /// How long until Flashbar will hide itself (be dismissed). To make it indefinite, leave it null.
+  /// How long until Flash will hide itself (be dismissed). To make it indefinite, leave it null.
   final Duration duration;
 
   /// Use it to speed up or slow down the animation duration
   final Duration transitionDuration;
 
-  /// Whether this flashbar is add to route.
+  /// Whether this Flash is add to route.
   ///
   /// Must be non-null, defaults to `true`
   ///
-  /// If `true` the flashbar will not add to route.
+  /// If `true` the Flash will not add to route.
   ///
-  /// If `false`, the flashbar will add to route as a [LocalHistoryEntry]. Typically the page is wrap with Overlay.
+  /// If `false`, the Flash will add to route as a [LocalHistoryEntry]. Typically the page is wrap with Overlay.
   ///
-  /// This can be useful in situations where the app needs to dismiss the flashbar with [Navigator.pop].
+  /// This can be useful in situations where the app needs to dismiss the Flash with [Navigator.pop].
   ///
   /// ```dart
   /// Navigator.of(context).push(MaterialPageRoute(builder: (context) {
   ///   return Overlay(
   ///     initialEntries: [
   ///       OverlayEntry(builder: (context) {
-  ///         return FlashbarPage();
+  ///         return FlashPage();
   ///       }),
   ///     ],
   ///   );
   /// ```
-  final bool isPersistent;
+  final bool persistent;
 
   /// Called to veto attempts by the user to dismiss the enclosing [ModalRoute].
   ///
@@ -80,21 +80,25 @@ class FlashbarController<T> {
   bool _dismissed = false;
   bool _removedHistoryEntry = false;
 
-  FlashbarController(
+  FlashController(
     this.context,
     this.builder, {
     this.duration,
     this.transitionDuration = const Duration(milliseconds: 500),
-    this.isPersistent = true,
+    this.persistent = true,
     this.onWillPop,
   })  : assert(context != null),
         assert(builder != null),
-        assert(isPersistent != null),
+        assert(persistent != null),
         route = ModalRoute.of(context) {
-    if (!isPersistent) {
+    var rootOverlay = Navigator.of(context).overlay;
+    if (persistent) {
+      overlay = rootOverlay;
+    } else {
       overlay = Overlay.of(context);
+      assert(overlay != rootOverlay,
+          'overlay can\'t be the root overlay when persistent is false');
     }
-    overlay ??= Navigator.of(context).overlay;
     assert(overlay != null);
     _controller = createAnimationController()
       ..addStatusListener(_handleStatusChanged);
@@ -171,7 +175,7 @@ class FlashbarController<T> {
   }
 
   void _configurePersistent() {
-    if (!isPersistent) {
+    if (!persistent) {
       _historyEntry = LocalHistoryEntry(onRemove: () {
         assert(!_transitionCompleter.isCompleted,
             'Cannot reuse a $runtimeType after disposing it.');
@@ -187,7 +191,7 @@ class FlashbarController<T> {
   }
 
   void _removeLocalHistory() {
-    if (!isPersistent && !_removedHistoryEntry) {
+    if (!persistent && !_removedHistoryEntry) {
       _historyEntry.remove();
       _removedHistoryEntry = true;
     }
@@ -251,64 +255,55 @@ class FlashbarController<T> {
 }
 
 /// A highly customizable widget so you can notify your user when you fell like he needs a beautiful explanation.
-class Flashbar<T extends Object> extends StatefulWidget {
-  Flashbar({
+class Flash<T extends Object> extends StatefulWidget {
+  Flash({
     Key key,
     @required this.controller,
-    this.title,
-    this.message,
-    this.icon,
-    this.shouldIconPulse = true,
+    @required this.child,
     this.margin = const EdgeInsets.all(0.0),
-    this.padding = const EdgeInsets.all(16),
     this.borderRadius,
     this.borderColor,
     this.borderWidth = 1.0,
-    this.backgroundColor,
-    this.leftBarIndicatorColor,
+    this.brightness = Brightness.light,
+    this.backgroundColor = Colors.white,
     this.boxShadows,
     this.backgroundGradient,
-    this.primaryAction,
-    this.actions,
     this.onTap,
     this.enableDrag = true,
-    this.showProgressIndicator = false,
-    this.progressIndicatorController,
-    this.progressIndicatorBackgroundColor,
-    this.progressIndicatorValueColor,
-    this.flashbarPosition = FlashbarPosition.BOTTOM,
-    this.flashbarStyle = FlashbarStyle.FLOATING,
-    this.forwardAnimationCurve = Curves.fastLinearToSlowEaseIn,
+    this.insetAnimationDuration = const Duration(milliseconds: 100),
+    this.insetAnimationCurve = Curves.fastOutSlowIn,
+    this.alignment,
+    this.position = FlashPosition.bottom,
+    this.style = FlashStyle.floating,
+    this.forwardAnimationCurve = Curves.fastOutSlowIn,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
     this.barrierBlur,
     this.barrierColor,
     this.barrierDismissible = true,
-    this.userInputForm,
   })  : assert(controller != null),
+        assert(child != null),
+        assert(brightness != null),
+        assert(style != null),
+        assert(position != null),
+        assert(() {
+          if (alignment != null) return style == FlashStyle.floating;
+          return true;
+        }()),
         assert(barrierDismissible != null),
         super(key: key);
 
-  final FlashbarController controller;
+  final FlashController controller;
 
-  /// The (optional) title of the flashbar is displayed in a large font at the top
-  /// of the flashbar.
+  /// The widget below this widget in the tree.
   ///
-  /// Typically a [Text] widget.
-  final Widget title;
+  /// {@macro flutter.widgets.child}
+  final Widget child;
 
-  /// The message of the flashbar is displayed in the center of the flashbar in
-  /// a lighter font.
-  ///
-  /// Typically a [Text] widget.
-  final Widget message;
+  /// The brightness of the [backgroundColor] or [backgroundGradient]
+  final Brightness brightness;
 
   /// Will be ignored if [backgroundGradient] is not null
-  /// {@macro flutter.material.dialog.backgroundColor}
   final Color backgroundColor;
-
-  /// If not null, shows a left vertical bar to better indicate the humor of the notification.
-  /// It is not possible to use it with a [Form] and I do not recommend using it with [LinearProgressIndicator]
-  final Color leftBarIndicatorColor;
 
   /// [boxShadows] The shadows generated by Flashbar. Leave it null if you don't want a shadow.
   /// You can use more than one if you feel the need.
@@ -318,91 +313,77 @@ class Flashbar<T extends Object> extends StatefulWidget {
   /// Makes [backgroundColor] be ignored.
   final Gradient backgroundGradient;
 
-  /// You can use any widget here, but I recommend [Icon] or [Image] as indication of what kind
-  /// of message you are displaying. Other widgets may break the layout
-  final Widget icon;
-
-  /// An option to animate the icon (if present). Defaults to true.
-  final bool shouldIconPulse;
-
-  /// A widget if you need an action from the user.
-  final Widget primaryAction;
-
-  /// The (optional) set of actions that are displayed at the bottom of the flashbar.
-  ///
-  /// Typically this is a list of [FlatButton] widgets.
-  ///
-  /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
-  /// of padding on each side.
-  final List<Widget> actions;
-
   /// A callback that registers the user's click anywhere. An alternative to [primaryAction]
   final GestureTapCallback onTap;
-
-  /// True if you want to show a [LinearProgressIndicator].
-  final bool showProgressIndicator;
-
-  /// An optional [AnimationController] when you want to control the progress of your [LinearProgressIndicator].
-  final AnimationController progressIndicatorController;
-
-  /// A [LinearProgressIndicator] configuration parameter.
-  final Color progressIndicatorBackgroundColor;
-
-  /// A [LinearProgressIndicator] configuration parameter.
-  final Animation<Color> progressIndicatorValueColor;
 
   /// Determines if the user can swipe to dismiss the bar.
   /// It is recommended that you set [duration] != null if this is false.
   /// If the user swipes to dismiss no value will be returned.
   final bool enableDrag;
 
-  /// Adds a custom margin to Flashbar
+  /// The duration of the animation to show when the system keyboard intrudes
+  /// into the space that the dialog is placed in.
+  ///
+  /// Defaults to 100 milliseconds.
+  final Duration insetAnimationDuration;
+
+  /// The curve to use for the animation shown when the system keyboard intrudes
+  /// into the space that the dialog is placed in.
+  ///
+  /// Defaults to [Curves.fastOutSlowIn].
+  final Curve insetAnimationCurve;
+
+  /// Adds a custom margin to Flash
   final EdgeInsets margin;
 
-  /// Adds a custom padding to Flashbar
-  /// The default follows material design guide line
-  final EdgeInsets padding;
-
-  /// Adds a radius to all corners of Flashbar. Best combined with [margin].
+  /// Adds a radius to all corners of Flash. Best combined with [margin].
   final BorderRadius borderRadius;
 
-  /// Adds a border to every side of Flashbar
+  /// Adds a border to every side of Flash
   final Color borderColor;
 
   /// Changes the width of the border if [borderColor] is specified
   final double borderWidth;
 
-  /// Flashbar can be based on [FlashbarPosition.TOP] or on [FlashbarPosition.BOTTOM] of your screen.
-  /// [FlashbarPosition.BOTTOM] is the default.
-  final FlashbarPosition flashbarPosition;
+  /// How to align the flash.
+  final AlignmentGeometry alignment;
 
-  /// Flashbar can be floating or be grounded to the edge of the screen.
-  /// If grounded, I do not recommend using [margin] or [borderRadius]. [FlashbarStyle.FLOATING] is the default
-  final FlashbarStyle flashbarStyle;
+  /// Flash can be based on [FlashPosition.top] or on [FlashPosition.center] or on [FlashPosition.bottom] of your screen.
+  ///
+  /// If [position] is not [FlashPosition.center], then the [alignment] has no effect.
+  ///
+  /// Default to [FlashPosition.bottom].
+  final FlashPosition position;
 
-  /// The [Curve] animation used when show() is called. [Curves.easeOut] is default
+  /// Flash can be floating or be grounded to the edge of the screen.
+  /// If [flashStyle] is grounded, I do not recommend using [margin] or [borderRadius].
+  ///
+  /// Default to [FlashStyle.floating].
+  final FlashStyle style;
+
+  /// The [Curve] animation used when show() is called. [Curves.fastOutSlowIn] is default
   final Curve forwardAnimationCurve;
 
   /// The [Curve] animation used when dismiss() is called. [Curves.fastOutSlowIn] is default
   final Curve reverseAnimationCurve;
 
-  /// Only takes effect if [FlashbarController.isPersistent] is false.
+  /// Only takes effect if [FlashController.persistent] is false.
   /// Creates a blurred overlay that prevents the user from interacting with the screen.
   /// The greater the value, the greater the blur.
   final double barrierBlur;
 
-  /// Only takes effect if [FlashbarController.isPersistent] is false.
+  /// Only takes effect if [FlashController.persistent] is false.
   /// Make sure you use a color with transparency here e.g. Colors.grey[600].withOpacity(0.2).
   final Color barrierColor;
 
-  /// Only takes effect if [FlashbarController.isPersistent] is false, and [barrierBlur] or [barrierColor] is not null.
+  /// Only takes effect if [FlashController.persistent] is false, and [barrierBlur] or [barrierColor] is not null.
   /// Whether you can dismiss this flashbar by tapping the modal barrier.
   ///
   /// For example, when a dialog is on the screen, the page below the dialog is
   /// usually darkened by the modal barrier.
   ///
   /// If [barrierDismissible] is true, then tapping this barrier will cause the
-  /// current flashbar to be dismiss (see [FlashbarController.dismiss]) with null as the value.
+  /// current flashbar to be dismiss (see [FlashController.dismiss]) with null as the value.
   ///
   /// If [barrierDismissible] is false, then tapping the barrier has no effect.
   ///
@@ -412,31 +393,13 @@ class Flashbar<T extends Object> extends StatefulWidget {
   ///  * [barrierColor], which controls the color of the scrim for this flashbar.
   final bool barrierDismissible;
 
-  /// A [TextFormField] in case you want a simple user input. Every other widget is ignored if this is not null.
-  final Form userInputForm;
-
   @override
   State createState() {
-    return _FlashbarState<T>();
+    return _FlashState<T>();
   }
 }
 
-class _FlashbarState<K extends Object> extends State<Flashbar>
-    with TickerProviderStateMixin {
-  AnimationController _fadeController;
-  Animation<double> _fadeAnimation;
-
-  final double _initialOpacity = 1.0;
-  final double _finalOpacity = 0.4;
-
-  final Duration _pulseAnimationDuration = Duration(seconds: 1);
-
-  bool _isTitlePresent;
-  double _messageTopMargin;
-
-  FocusScopeNode _focusNode;
-  FocusAttachment _focusAttachment;
-
+class _FlashState<K extends Object> extends State<Flash> {
   final GlobalKey _childKey = GlobalKey(debugLabel: 'flashbar child');
 
   double get _childHeight {
@@ -444,7 +407,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
     return renderBox.size.height;
   }
 
-  FlashbarController get controller => widget.controller;
+  FlashController get controller => widget.controller;
 
   AnimationController get animationController => controller.controller;
 
@@ -455,162 +418,131 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
   @override
   void initState() {
     super.initState();
-
-    assert(widget.userInputForm != null || widget.message != null,
-        "A message is mandatory if you are not using userInputForm. Set either a message or messageText");
-
-    _isTitlePresent = (widget.title != null);
-    _messageTopMargin = _isTitlePresent ? 6.0 : widget.padding.top;
-
-    _configureProgressIndicatorAnimation();
-
-    if (widget.icon != null && widget.shouldIconPulse) {
-      _configurePulseAnimation();
-      _fadeController?.forward();
-    }
-
-    _focusNode = FocusScopeNode();
-    _focusAttachment = _focusNode.attach(context);
-
     animationController.addStatusListener(_handleStatusChanged);
     _slideAnimation = _animation = _createAnimation();
-  }
-
-  @override
-  void dispose() {
-    _fadeController?.dispose();
-
-    widget.progressIndicatorController?.removeListener(_progressListener);
-    widget.progressIndicatorController?.dispose();
-
-    _focusAttachment.detach();
-    _focusNode.dispose();
-    super.dispose();
-  }
-
-  void _configurePulseAnimation() {
-    _fadeController =
-        AnimationController(vsync: this, duration: _pulseAnimationDuration);
-    _fadeAnimation = Tween(begin: _initialOpacity, end: _finalOpacity).animate(
-      CurvedAnimation(
-        parent: _fadeController,
-        curve: Curves.linear,
-      ),
-    );
-
-    _fadeController.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _fadeController.reverse();
-      }
-      if (status == AnimationStatus.dismissed) {
-        _fadeController.forward();
-      }
-    });
-
-    _fadeController.forward();
-  }
-
-  Function _progressListener;
-
-  void _configureProgressIndicatorAnimation() {
-    if (widget.showProgressIndicator &&
-        widget.progressIndicatorController != null) {
-      _progressListener = () {
-        setState(() {});
-      };
-      widget.progressIndicatorController.addListener(_progressListener);
-
-      _progressAnimation = CurvedAnimation(
-          curve: Curves.linear, parent: widget.progressIndicatorController);
-    }
   }
 
   bool get _dismissUnderway =>
       animationController.status == AnimationStatus.reverse;
 
-  Color get backgroundColor {
-    return widget.backgroundColor ??
-        (Theme.of(context).brightness == Brightness.dark
-            ? Colors.white
-            : const Color(0xFF333333));
-  }
-
-  bool _isDarkBackground() {
-    return ThemeData.estimateBrightnessForColor(backgroundColor) ==
-        Brightness.dark;
+  bool _isDark() {
+    return widget.brightness == Brightness.dark;
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget child = _getFlashbar();
+    Widget child = widget.child;
 
-    void warpChild() {
-      if (widget.enableDrag) {
-        child = GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onVerticalDragUpdate: _handleDragUpdate,
-          onVerticalDragEnd: _handleDragEnd,
-          child: child,
-          excludeFromSemantics: true,
-        );
-      }
-      child = Material(
-        color: backgroundColor,
-        type: widget.flashbarStyle == FlashbarStyle.GROUNDED
-            ? MaterialType.canvas
-            : MaterialType.transparency,
-        child: child,
-      );
-      child = DecoratedBox(
-        decoration: BoxDecoration(
-          boxShadow: widget.boxShadows,
-        ),
+    if (widget.borderRadius != null) {
+      child = ClipRRect(
+        borderRadius: widget.borderRadius,
         child: child,
       );
     }
 
-    if (widget.flashbarStyle == FlashbarStyle.FLOATING) {
-      warpChild();
-    }
-
-    child = SafeArea(
-      minimum: widget.flashbarPosition == FlashbarPosition.BOTTOM
-          ? EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom)
-          : EdgeInsets.only(top: MediaQuery.of(context).viewInsets.top),
-      bottom: widget.flashbarPosition == FlashbarPosition.BOTTOM,
-      top: widget.flashbarPosition == FlashbarPosition.TOP,
-      left: false,
-      right: false,
+    child = Ink(
+      decoration: BoxDecoration(
+        color: widget.backgroundColor,
+        gradient: widget.backgroundGradient,
+        borderRadius: widget.borderRadius,
+        border: widget.borderColor != null
+            ? Border.all(color: widget.borderColor, width: widget.borderWidth)
+            : null,
+      ),
       child: child,
     );
 
-    if (widget.flashbarStyle == FlashbarStyle.GROUNDED) {
-      warpChild();
+    if (widget.onTap != null) {
+      child = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: child,
+      );
+    }
+
+    if (widget.style == FlashStyle.grounded) {
+      child = SafeArea(
+        bottom: widget.position == FlashPosition.bottom,
+        top: widget.position == FlashPosition.top,
+        child: child,
+      );
+    }
+
+    child = Material(
+      color: widget.backgroundColor,
+      type: widget.style == FlashStyle.grounded
+          ? MaterialType.canvas
+          : MaterialType.transparency,
+      child: child,
+    );
+
+    if (widget.position == FlashPosition.top) {
+      child = AnnotatedRegion<SystemUiOverlayStyle>(
+        value:
+            _isDark() ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+        child: child,
+      );
+    }
+
+    if (widget.enableDrag) {
+      child = GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onVerticalDragUpdate: _handleDragUpdate,
+        onVerticalDragEnd: _handleDragEnd,
+        child: child,
+        excludeFromSemantics: true,
+      );
+    }
+
+    child = DecoratedBox(
+      decoration: BoxDecoration(
+        boxShadow: widget.boxShadows,
+      ),
+      child: child,
+    );
+
+    if (widget.style == FlashStyle.floating) {
+      child = SafeArea(
+        bottom: widget.position == FlashPosition.bottom,
+        top: widget.position == FlashPosition.top,
+        child: child,
+      );
     }
 
     if (widget.margin != null) {
-      child = Padding(
-        padding: widget.margin,
+      child = AnimatedPadding(
+        padding: MediaQuery.of(context).viewInsets + widget.margin,
+        duration: widget.insetAnimationDuration,
+        curve: widget.insetAnimationCurve,
         child: child,
       );
     }
 
-    if (widget.flashbarStyle != FlashbarStyle.FLOATING) {
-      child = AnnotatedRegion<SystemUiOverlayStyle>(
+    if (widget.position == FlashPosition.top) {
+      child = SlideTransition(
+        key: _childKey,
+        position: _slideAnimation.drive(
+            Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero)),
+        child: child,
+      );
+    } else if (widget.position == FlashPosition.bottom) {
+      child = SlideTransition(
+        key: _childKey,
+        position: _slideAnimation.drive(
+            Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero)),
+        child: child,
+      );
+    } else {
+      child = SlideTransition(
+        key: _childKey,
+        position: _slideAnimation.drive(
+            Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero)),
+        child: FadeTransition(
+          opacity: _slideAnimation.drive(Tween<double>(begin: 0.0, end: 1.0)),
           child: child,
-          value: _isDarkBackground()
-              ? SystemUiOverlayStyle.light
-              : SystemUiOverlayStyle.dark);
+        ),
+      );
     }
-
-    child = SlideTransition(
-      key: _childKey,
-      position: _slideAnimation.drive(widget.flashbarPosition ==
-              FlashbarPosition.BOTTOM
-          ? Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero)
-          : Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero)),
-      child: child,
-    );
 
     var overlayBlur = widget.barrierBlur;
     var overlayColor = widget.barrierColor;
@@ -620,7 +552,7 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
       explicitChildNodes: true,
       child: Stack(
         children: <Widget>[
-          if (!controller.isPersistent &&
+          if (!controller.persistent &&
               (overlayBlur != null || overlayColor != null))
             AnimatedBuilder(
               animation: animationController,
@@ -647,53 +579,265 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                 );
               },
             ),
-          Align(
-            alignment: widget.flashbarPosition == FlashbarPosition.TOP
-                ? Alignment.topCenter
-                : Alignment.bottomCenter,
-            child: child,
-          ),
+          if (widget.position == FlashPosition.center)
+            SafeArea(
+              child: Align(
+                alignment: widget.alignment ?? Alignment.center,
+                child: child,
+              ),
+            )
+          else
+            Align(
+              alignment: widget.position == FlashPosition.bottom
+                  ? Alignment.bottomCenter
+                  : Alignment.topCenter,
+              child: child,
+            ),
         ],
       ),
     );
     return child;
   }
 
-  Widget _getFlashbar() {
-    Widget child = _generateFlashbar();
-
-    if (widget.borderRadius != null) {
-      child = ClipRRect(
-        borderRadius: widget.borderRadius,
-        child: child,
-      );
-    }
-
-    child = Ink(
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        gradient: widget.backgroundGradient,
-        borderRadius: widget.borderRadius,
-        border: widget.borderColor != null
-            ? Border.all(color: widget.borderColor, width: widget.borderWidth)
-            : null,
-      ),
-      child: child,
+  /// Called to create the animation that exposes the current progress of
+  /// the transition controlled by the animation controller created by
+  /// [FlashController.createAnimationController].
+  Animation<double> _createAnimation() {
+    assert(animationController != null);
+    return CurvedAnimation(
+      parent: animationController.view,
+      curve: widget.forwardAnimationCurve,
+      reverseCurve: widget.reverseAnimationCurve,
     );
-
-    if (widget.onTap != null) {
-      child = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: child,
-      );
-    }
-    return child;
   }
 
-  CurvedAnimation _progressAnimation;
+  void _handleDragUpdate(DragUpdateDetails details) {
+    assert(widget.enableDrag);
+    if (_dismissUnderway) return;
+    _isDragging = true;
+    if (widget.position == FlashPosition.top) {
+      animationController.value +=
+          details.primaryDelta / (_childHeight ?? details.primaryDelta);
+    } else {
+      animationController.value -=
+          details.primaryDelta / (_childHeight ?? details.primaryDelta);
+    }
+  }
 
-  Widget _generateFlashbar() {
+  void _handleDragEnd(DragEndDetails details) {
+    assert(widget.enableDrag);
+    if (_dismissUnderway) return;
+    _isDragging = false;
+    if (animationController.status == AnimationStatus.completed) {
+      setState(() => _slideAnimation = _animation);
+    }
+    if (widget.position == FlashPosition.top &&
+        details.velocity.pixelsPerSecond.dy < -_minFlingVelocity) {
+      final double flingVelocity =
+          details.velocity.pixelsPerSecond.dy / _childHeight;
+      if (animationController.value > 0.0) {
+        animationController.fling(velocity: flingVelocity);
+      }
+      controller.dismissManual();
+    } else if (widget.position == FlashPosition.bottom &&
+        details.velocity.pixelsPerSecond.dy > _minFlingVelocity) {
+      final double flingVelocity =
+          -details.velocity.pixelsPerSecond.dy / _childHeight;
+      if (animationController.value > 0.0) {
+        animationController.fling(velocity: flingVelocity);
+      }
+      controller.dismissManual();
+    } else if (animationController.value < _closeProgressThreshold) {
+      if (animationController.value > 0.0)
+        animationController.fling(velocity: -1.0);
+      controller.dismissManual();
+    } else {
+      animationController.forward();
+    }
+  }
+
+  void _handleStatusChanged(AnimationStatus status) {
+    switch (status) {
+      case AnimationStatus.completed:
+        if (!_isDragging) {
+          setState(() => _slideAnimation = _animation);
+        }
+        break;
+      case AnimationStatus.forward:
+      case AnimationStatus.reverse:
+        if (_isDragging) {
+          setState(() => _slideAnimation = animationController);
+        }
+        break;
+      case AnimationStatus.dismissed:
+        break;
+    }
+  }
+}
+
+/// Indicates if flash is going to start at the [top] or at the [center] or at the [bottom].
+enum FlashPosition { top, center, bottom }
+
+/// Indicates if flash will be attached to the edge of the screen or not
+enum FlashStyle { floating, grounded }
+
+class FlashBar extends StatefulWidget {
+  FlashBar({
+    Key key,
+    this.padding = const EdgeInsets.all(16),
+    this.title,
+    this.message,
+    this.icon,
+    this.shouldIconPulse = true,
+    this.leftBarIndicatorColor,
+    this.primaryAction,
+    this.actions,
+    this.showProgressIndicator = false,
+    this.progressIndicatorController,
+    this.progressIndicatorBackgroundColor,
+    this.progressIndicatorValueColor,
+    this.userInputForm,
+  })  : assert(showProgressIndicator != null),
+        super(key: key);
+
+  /// The (optional) title of the flashbar is displayed in a large font at the top
+  /// of the flashbar.
+  ///
+  /// Typically a [Text] widget.
+  final Widget title;
+
+  /// The message of the flashbar is displayed in the center of the flashbar in
+  /// a lighter font.
+  ///
+  /// Typically a [Text] widget.
+  final Widget message;
+
+  /// If not null, shows a left vertical bar to better indicate the humor of the notification.
+  /// It is not possible to use it with a [Form] and I do not recommend using it with [LinearProgressIndicator]
+  final Color leftBarIndicatorColor;
+
+  /// You can use any widget here, but I recommend [Icon] or [Image] as indication of what kind
+  /// of message you are displaying. Other widgets may break the layout
+  final Widget icon;
+
+  /// An option to animate the icon (if present). Defaults to true.
+  final bool shouldIconPulse;
+
+  /// A widget if you need an action from the user.
+  final Widget primaryAction;
+
+  /// The (optional) set of actions that are displayed at the bottom of the flashbar.
+  ///
+  /// Typically this is a list of [FlatButton] widgets.
+  ///
+  /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
+  /// of padding on each side.
+  final List<Widget> actions;
+
+  /// True if you want to show a [LinearProgressIndicator].
+  final bool showProgressIndicator;
+
+  /// An optional [AnimationController] when you want to control the progress of your [LinearProgressIndicator].
+  final AnimationController progressIndicatorController;
+
+  /// A [LinearProgressIndicator] configuration parameter.
+  final Color progressIndicatorBackgroundColor;
+
+  /// A [LinearProgressIndicator] configuration parameter.
+  final Animation<Color> progressIndicatorValueColor;
+
+  /// Adds a custom padding to Flashbar
+  ///
+  /// The default follows material design guide line
+  final EdgeInsets padding;
+
+  /// A [TextFormField] in case you want a simple user input. Every other widget is ignored if this is not null.
+  final Form userInputForm;
+
+  @override
+  _FlashBarState createState() => _FlashBarState();
+}
+
+class _FlashBarState extends State<FlashBar>
+    with SingleTickerProviderStateMixin {
+  AnimationController _fadeController;
+  Animation<double> _fadeAnimation;
+
+  final double _initialOpacity = 1.0;
+  final double _finalOpacity = 0.4;
+
+  final Duration _pulseAnimationDuration = Duration(seconds: 1);
+
+  bool _isTitlePresent;
+  double _messageTopMargin;
+
+  FocusScopeNode _focusNode;
+  FocusAttachment _focusAttachment;
+
+  @override
+  void initState() {
+    super.initState();
+
+    assert(widget.userInputForm != null || widget.message != null,
+        "A message is mandatory if you are not using userInputForm. Set either a message or messageText");
+
+    _isTitlePresent = (widget.title != null);
+    _messageTopMargin = _isTitlePresent ? 6.0 : widget.padding.top;
+
+    _configureProgressIndicatorAnimation();
+
+    if (widget.icon != null && widget.shouldIconPulse) {
+      _configurePulseAnimation();
+      _fadeController?.forward();
+    }
+
+    _focusNode = FocusScopeNode();
+    _focusAttachment = _focusNode.attach(context);
+  }
+
+  void _configureProgressIndicatorAnimation() {
+    if (widget.showProgressIndicator &&
+        widget.progressIndicatorController != null) {
+      _progressAnimation = CurvedAnimation(
+          curve: Curves.linear, parent: widget.progressIndicatorController);
+    }
+  }
+
+  void _configurePulseAnimation() {
+    _fadeController =
+        AnimationController(vsync: this, duration: _pulseAnimationDuration);
+    _fadeAnimation = Tween(begin: _initialOpacity, end: _finalOpacity).animate(
+      CurvedAnimation(
+        parent: _fadeController,
+        curve: Curves.linear,
+      ),
+    );
+
+    _fadeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _fadeController.reverse();
+      }
+      if (status == AnimationStatus.dismissed) {
+        _fadeController.forward();
+      }
+    });
+
+    _fadeController.forward();
+  }
+
+  @override
+  void dispose() {
+    _fadeController?.dispose();
+
+    widget.progressIndicatorController?.dispose();
+
+    _focusAttachment.detach();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -707,12 +851,15 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
           ),
         IntrinsicHeight(
           child: Row(
-              mainAxisSize: MainAxisSize.max,
-              children: _getAppropriateRowLayout()),
+            mainAxisSize: MainAxisSize.min,
+            children: _getAppropriateRowLayout(),
+          ),
         ),
       ],
     );
   }
+
+  CurvedAnimation _progressAnimation;
 
   List<Widget> _getAppropriateRowLayout() {
     double buttonRightPadding;
@@ -737,7 +884,6 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
-            mainAxisSize: MainAxisSize.min,
             children: <Widget>[
               if (_isTitlePresent)
                 Padding(
@@ -787,7 +933,6 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         if (_isTitlePresent)
                           Padding(
@@ -838,7 +983,6 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
                         if (_isTitlePresent)
                           Padding(
@@ -898,7 +1042,6 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.stretch,
-                        mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           if (_isTitlePresent)
                             Padding(
@@ -962,46 +1105,26 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
   }
 
   Widget _getTitle() {
-    return DefaultTextStyle(
-      style: _getTitleStyle(),
-      child: Semantics(
-        child: widget.title,
-        namesRoute: true,
-        container: true,
-      ),
+    return Semantics(
+      child: widget.title,
+      namesRoute: true,
+      container: true,
     );
-  }
-
-  TextStyle _getTitleStyle() {
-    final ThemeData theme = Theme.of(context);
-    final DialogTheme dialogTheme = DialogTheme.of(context);
-    return (dialogTheme.titleTextStyle ?? theme.textTheme.title)
-        .copyWith(color: _isDarkBackground() ? Colors.white : Colors.black87);
   }
 
   Widget _getMessage() {
-    return DefaultTextStyle(
-      style: _getMessageStyle(),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: <Widget>[
-          if (widget.message != null) widget.message,
-          if (widget.userInputForm != null)
-            FocusScope(
-              child: widget.userInputForm,
-              node: _focusNode,
-              autofocus: true,
-            ),
-        ],
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        if (widget.message != null) widget.message,
+        if (widget.userInputForm != null)
+          FocusScope(
+            child: widget.userInputForm,
+            node: _focusNode,
+            autofocus: true,
+          ),
+      ],
     );
-  }
-
-  TextStyle _getMessageStyle() {
-    final ThemeData theme = Theme.of(context);
-    final DialogTheme dialogTheme = DialogTheme.of(context);
-    return (dialogTheme.contentTextStyle ?? theme.textTheme.subhead)
-        .copyWith(color: _isDarkBackground() ? Colors.white : Colors.black87);
   }
 
   Widget _getPrimaryAction() {
@@ -1017,85 +1140,4 @@ class _FlashbarState<K extends Object> extends State<Flashbar>
       ),
     );
   }
-
-  /// Called to create the animation that exposes the current progress of
-  /// the transition controlled by the animation controller created by
-  /// [FlashbarController.createAnimationController].
-  Animation<double> _createAnimation() {
-    assert(animationController != null);
-    return CurvedAnimation(
-      parent: animationController.view,
-      curve: widget.forwardAnimationCurve,
-      reverseCurve: widget.reverseAnimationCurve,
-    );
-  }
-
-  void _handleDragUpdate(DragUpdateDetails details) {
-    assert(widget.enableDrag);
-    if (_dismissUnderway) return;
-    _isDragging = true;
-    if (widget.flashbarPosition == FlashbarPosition.TOP) {
-      animationController.value +=
-          details.primaryDelta / (_childHeight ?? details.primaryDelta);
-    } else {
-      animationController.value -=
-          details.primaryDelta / (_childHeight ?? details.primaryDelta);
-    }
-  }
-
-  void _handleDragEnd(DragEndDetails details) {
-    assert(widget.enableDrag);
-    if (_dismissUnderway) return;
-    _isDragging = false;
-    if (animationController.status == AnimationStatus.completed) {
-      setState(() => _slideAnimation = _animation);
-    }
-    if (widget.flashbarPosition == FlashbarPosition.TOP &&
-        details.velocity.pixelsPerSecond.dy < -_minFlingVelocity) {
-      final double flingVelocity =
-          details.velocity.pixelsPerSecond.dy / _childHeight;
-      if (animationController.value > 0.0) {
-        animationController.fling(velocity: flingVelocity);
-      }
-      controller.dismissManual();
-    } else if (widget.flashbarPosition == FlashbarPosition.BOTTOM &&
-        details.velocity.pixelsPerSecond.dy > _minFlingVelocity) {
-      final double flingVelocity =
-          -details.velocity.pixelsPerSecond.dy / _childHeight;
-      if (animationController.value > 0.0) {
-        animationController.fling(velocity: flingVelocity);
-      }
-      controller.dismissManual();
-    } else if (animationController.value < _closeProgressThreshold) {
-      if (animationController.value > 0.0)
-        animationController.fling(velocity: -1.0);
-      controller.dismissManual();
-    } else {
-      animationController.forward();
-    }
-  }
-
-  void _handleStatusChanged(AnimationStatus status) {
-    switch (status) {
-      case AnimationStatus.completed:
-        if (!_isDragging) {
-          setState(() => _slideAnimation = _animation);
-        }
-        break;
-      case AnimationStatus.forward:
-      case AnimationStatus.reverse:
-        if (_isDragging) {
-          setState(() => _slideAnimation = animationController);
-        }
-        break;
-      case AnimationStatus.dismissed:
-        break;
-    }
-  }
 }
-
-/// Indicates if flashbar is going to start at the [TOP] or at the [BOTTOM]
-enum FlashbarPosition { TOP, BOTTOM }
-
-/// Indicates if flashbar will be attached to the edge of the screen or not
-enum FlashbarStyle { FLOATING, GROUNDED }

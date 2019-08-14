@@ -20,7 +20,7 @@ dependencies:
   flutter:
     sdk: flutter
 
-  flashbar:
+  flash:
     path: ../
 
 dev_dependencies:

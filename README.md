@@ -1,15 +1,16 @@
-# Flashbar
-
-> This is a flutter widget inspired by [Flashbar](https://github.com/aritraroy/Flashbar) and [Flushbar](https://github.com/AndreHaueisen/flushbar).
+# Flash
 
 ⚡️A highly customizable, powerful and easy-to-use alerting library for
 Flutter.
 
 ### Specs
-[![Android Arsenal](https://img.shields.io/pub/v/flashbar.svg?style=flat)](https://pub.dev/packages/flashbar)
+[![pub](https://img.shields.io/pub/v/flash.svg?style=flat)](https://pub.dev/packages/flash)
 
 
-This library allows you to show messages or alerts in your app **quickly and easily**. It can be used as an alternative to `Snackbar` or `Toast` and offers a plethora of useful features and customization options for you to play with.
+This library allows you to show messages or alerts in your app **quickly
+and easily**. It can be used as an alternative to `Snackbar` or `Toast`
+or `Dialog` and offers a plethora of useful features and customization
+options for you to play with.
 
 It has been written **100% in Dart**. ❤️
 
@@ -28,41 +29,50 @@ It has been written **100% in Dart**. ❤️
 
 # Getting started
 
-In the `pubspec.yaml` of your flutter project, add the following dependency:
+In the `pubspec.yaml` of your flutter project, add the following
+dependency:
 
 ```yaml
 dependencies:
   ...
-  flashbar: "^1.0.0"
+  flash: "^1.1.0"
 ```
 
 In your library add the following import:
 
 ```dart
-import 'package:flashbar/flashbar.dart';
+import 'package:flash/flash.dart';
 ```
 
 # Sample Project
-We have an exhaustive [sample project](./example) demonstrating almost every feature of the library.
+We have an exhaustive [sample project](./example) demonstrating almost
+every feature of the library.
 
 # Usage
-It is recommended to check the sample project to get a complete understanding of all the features offered by the library.
+It is recommended to check the sample project to get a complete
+understanding of all the features offered by the library.
 
-> Coming soon.
+![image](https://user-images.githubusercontent.com/46806014/62988723-f27a5580-be77-11e9-93b5-d415041ee93d.png)
 
 # Roadmap
-These are some of the prioritized features in the pipeline awaiting to be implemented in the near future - 
+These are some of the prioritized features in the pipeline awaiting to
+be implemented in the near future
 
 
 # Contribution
 
-I highly encourage the community to step forward and improve this library further. You can fix any reported bug, propose or implement new features, write tests, etc.
+I highly encourage the community to step forward and improve this
+library further. You can fix any reported bug, propose or implement new
+features, write tests, etc.
 
-Here is a quick list of things to remember -
+Here is a quick list of things to remember
 * Check the open issues before creating a new one,
-* Help me in reducing the number of open issues by fixing any existing bugs,
-* Check the roadmap to see if you can help in implementing any new feature,
-* You can contribute by writing unit and integration tests for this library,
+* Help me in reducing the number of open issues by fixing any existing
+  bugs,
+* Check the roadmap to see if you can help in implementing any new
+  feature,
+* You can contribute by writing unit and integration tests for this
+  library,
 * If you have any new idea that aligns with the goal of this library,
   feel free to raise a feature request and discuss it.
 
