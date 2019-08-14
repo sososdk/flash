@@ -289,7 +289,8 @@ class _FlashPageState extends State<FlashPage> {
     );
   }
 
-  void _showBottomFlash({bool persistent = true, EdgeInsets margin}) {
+  void _showBottomFlash(
+      {bool persistent = true, EdgeInsets margin = EdgeInsets.zero}) {
     showFlash(
       context: context,
       persistent: persistent,

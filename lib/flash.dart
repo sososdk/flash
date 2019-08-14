@@ -260,7 +260,7 @@ class Flash<T extends Object> extends StatefulWidget {
     Key key,
     @required this.controller,
     @required this.child,
-    this.margin = const EdgeInsets.all(0.0),
+    this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
     this.borderWidth = 1.0,
@@ -282,6 +282,7 @@ class Flash<T extends Object> extends StatefulWidget {
     this.barrierDismissible = true,
   })  : assert(controller != null),
         assert(child != null),
+        assert(margin != null),
         assert(brightness != null),
         assert(style != null),
         assert(position != null),
@@ -509,14 +510,12 @@ class _FlashState<K extends Object> extends State<Flash> {
       );
     }
 
-    if (widget.margin != null) {
-      child = AnimatedPadding(
-        padding: MediaQuery.of(context).viewInsets + widget.margin,
-        duration: widget.insetAnimationDuration,
-        curve: widget.insetAnimationCurve,
-        child: child,
-      );
-    }
+    child = AnimatedPadding(
+      padding: MediaQuery.of(context).viewInsets + widget.margin,
+      duration: widget.insetAnimationDuration,
+      curve: widget.insetAnimationCurve,
+      child: child,
+    );
 
     if (widget.position == FlashPosition.top) {
       child = SlideTransition(

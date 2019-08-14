@@ -1,3 +1,8 @@
+## [1.1.0+2] - 2019-8-14
+
+### Fixes
+- `margin` added null checks 
+
 ## [1.1.0+1] - 2019-8-14
 
 ### Fixes
