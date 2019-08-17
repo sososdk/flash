@@ -62,6 +62,8 @@ understanding of all the features offered by the library.
 These are some of the prioritized features in the pipeline awaiting to
 be implemented in the near future
 
+- [ ] Add `FlashTheme`
+- [ ] Add `FlashHelper` for example
 
 # Contribution
 
