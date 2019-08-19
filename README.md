@@ -1,6 +1,10 @@
 # Flashbar
 
-> This is a flutter widget inspired by [Flashbar](https://github.com/aritraroy/Flashbar) and [Flushbar](https://github.com/AndreHaueisen/flushbar).
+> Deprecated: Please use [flash](https://pub.dev/packages/flash) instead
+
+> This is a flutter widget inspired by
+> [Flashbar](https://github.com/aritraroy/Flashbar) and
+> [Flushbar](https://github.com/AndreHaueisen/flushbar).
 
 ⚡️A highly customizable, powerful and easy-to-use alerting library for
 Flutter.

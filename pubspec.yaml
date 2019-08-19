@@ -1,6 +1,6 @@
 name: flashbar
 description: ⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter. 
-version: 1.0.0
+version: 1.0.0+1
 author: sososdk <csshuai2009@gmail.com>
 homepage: https://github.com/sososdk/flashbar
 
