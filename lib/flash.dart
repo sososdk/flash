@@ -104,9 +104,9 @@ class FlashController<T> {
       ..addStatusListener(_handleStatusChanged);
   }
 
-  /// A future that completes when this route is popped off the navigator.
+  /// A future that completes when this flash is popped.
   ///
-  /// The future completes with the value given to [Navigator.pop], if any.
+  /// The future completes with the value given to [dismiss], if any.
   Future<T> get popped => _transitionCompleter.future;
   final Completer<T> _transitionCompleter = Completer<T>();
 
