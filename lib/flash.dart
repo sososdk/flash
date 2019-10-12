@@ -6,8 +6,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-const double _minFlingVelocity = 700.0;
-const double _closeProgressThreshold = 0.5;
+const double _kMinFlingVelocity = 700.0;
+const double _kDismissThreshold = 0.5;
 
 typedef FlashBuilder = Widget Function(
     BuildContext context, FlashController controller);
@@ -270,6 +270,7 @@ class Flash<T extends Object> extends StatefulWidget {
     this.backgroundGradient,
     this.onTap,
     this.enableDrag = true,
+    this.horizontalDismissDirection,
     this.insetAnimationDuration = const Duration(milliseconds: 100),
     this.insetAnimationCurve = Curves.fastOutSlowIn,
     this.alignment,
@@ -284,12 +285,79 @@ class Flash<T extends Object> extends StatefulWidget {
         assert(child != null),
         assert(margin != null),
         assert(brightness != null),
+        assert(() {
+          if (alignment == null)
+            return style != null && position != null;
+          else
+            return style == null && position == null;
+        }()),
+        assert(barrierDismissible != null),
+        super(key: key);
+
+  Flash.bar({
+    Key key,
+    @required this.controller,
+    @required this.child,
+    this.margin = EdgeInsets.zero,
+    this.borderRadius,
+    this.borderColor,
+    this.borderWidth = 1.0,
+    this.brightness = Brightness.light,
+    this.backgroundColor = Colors.white,
+    this.boxShadows,
+    this.backgroundGradient,
+    this.onTap,
+    this.enableDrag = true,
+    this.horizontalDismissDirection,
+    this.insetAnimationDuration = const Duration(milliseconds: 100),
+    this.insetAnimationCurve = Curves.fastOutSlowIn,
+    this.position = FlashPosition.bottom,
+    this.style = FlashStyle.floating,
+    this.forwardAnimationCurve = Curves.fastOutSlowIn,
+    this.reverseAnimationCurve = Curves.fastOutSlowIn,
+    this.barrierBlur,
+    this.barrierColor,
+    this.barrierDismissible = true,
+  })  : alignment = null,
+        assert(controller != null),
+        assert(child != null),
+        assert(margin != null),
+        assert(brightness != null),
         assert(style != null),
         assert(position != null),
-        assert(() {
-          if (alignment != null) return style == FlashStyle.floating;
-          return true;
-        }()),
+        assert(barrierDismissible != null),
+        super(key: key);
+
+  Flash.dialog({
+    Key key,
+    @required this.controller,
+    @required this.child,
+    this.margin = EdgeInsets.zero,
+    this.borderRadius,
+    this.borderColor,
+    this.borderWidth = 1.0,
+    this.brightness = Brightness.light,
+    this.backgroundColor = Colors.white,
+    this.boxShadows,
+    this.backgroundGradient,
+    this.onTap,
+    this.enableDrag = false,
+    this.horizontalDismissDirection,
+    this.insetAnimationDuration = const Duration(milliseconds: 100),
+    this.insetAnimationCurve = Curves.fastOutSlowIn,
+    this.alignment = Alignment.center,
+    this.forwardAnimationCurve = Curves.fastOutSlowIn,
+    this.reverseAnimationCurve = Curves.fastOutSlowIn,
+    this.barrierBlur,
+    this.barrierColor = Colors.black54,
+    this.barrierDismissible = true,
+  })  : style = null,
+        position = null,
+        assert(controller != null),
+        assert(child != null),
+        assert(margin != null),
+        assert(brightness != null),
+        assert(alignment != null),
         assert(barrierDismissible != null),
         super(key: key);
 
@@ -317,10 +385,15 @@ class Flash<T extends Object> extends StatefulWidget {
   /// A callback that registers the user's click anywhere. An alternative to [primaryAction]
   final GestureTapCallback onTap;
 
-  /// Determines if the user can swipe to dismiss the bar.
+  /// Determines if the user can swipe vertically to dismiss the bar.
   /// It is recommended that you set [duration] != null if this is false.
   /// If the user swipes to dismiss no value will be returned.
   final bool enableDrag;
+
+  /// Determines if the user can swipe horizontally to dismiss the bar.
+  /// It is recommended that you set [duration] != null if this is false.
+  /// If the user swipes to dismiss no value will be returned.
+  final HorizontalDismissDirection horizontalDismissDirection;
 
   /// The duration of the animation to show when the system keyboard intrudes
   /// into the space that the dialog is placed in.
@@ -349,17 +422,11 @@ class Flash<T extends Object> extends StatefulWidget {
   /// How to align the flash.
   final AlignmentGeometry alignment;
 
-  /// Flash can be based on [FlashPosition.top] or on [FlashPosition.center] or on [FlashPosition.bottom] of your screen.
-  ///
-  /// If [position] is not [FlashPosition.center], then the [alignment] has no effect.
-  ///
-  /// Default to [FlashPosition.bottom].
+  /// Flash can be based on [FlashPosition.top] or on [FlashPosition.bottom] of your screen.
   final FlashPosition position;
 
   /// Flash can be floating or be grounded to the edge of the screen.
   /// If [flashStyle] is grounded, I do not recommend using [margin] or [borderRadius].
-  ///
-  /// Default to [FlashStyle.floating].
   final FlashStyle style;
 
   /// The [Curve] animation used when show() is called. [Curves.fastOutSlowIn] is default
@@ -395,36 +462,53 @@ class Flash<T extends Object> extends StatefulWidget {
   final bool barrierDismissible;
 
   @override
-  State createState() {
-    return _FlashState<T>();
-  }
+  State createState() => _FlashState<T>();
 }
 
 class _FlashState<K extends Object> extends State<Flash> {
   final GlobalKey _childKey = GlobalKey(debugLabel: 'flashbar child');
+
+  double get _childWidth {
+    final RenderBox renderBox = _childKey.currentContext.findRenderObject();
+    return renderBox.size.width;
+  }
 
   double get _childHeight {
     final RenderBox renderBox = _childKey.currentContext.findRenderObject();
     return renderBox.size.height;
   }
 
+  bool get enableDrag => widget.enableDrag;
+
+  HorizontalDismissDirection get horizontalDismissDirection =>
+      widget.horizontalDismissDirection;
+
+  bool get enableHorizontalDrag => widget.horizontalDismissDirection != null;
+
   FlashController get controller => widget.controller;
 
   AnimationController get animationController => controller.controller;
 
-  Animation<double> _animation, _slideAnimation;
+  Animation<Offset> _animation;
+
+  Animation<Offset> _moveAnimation;
 
   bool _isDragging = false;
+
+  double _dragExtent = 0.0;
+
+  bool _isHorizontalDragging = false;
 
   @override
   void initState() {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
-    _slideAnimation = _animation = _createAnimation();
+    _moveAnimation = _animation = _createAnimation();
   }
 
   bool get _dismissUnderway =>
-      animationController.status == AnimationStatus.reverse;
+      animationController.status == AnimationStatus.reverse ||
+      animationController.status == AnimationStatus.dismissed;
 
   bool _isDark() {
     return widget.brightness == Brightness.dark;
@@ -477,7 +561,7 @@ class _FlashState<K extends Object> extends State<Flash> {
       child: child,
     );
 
-    if (widget.position != FlashPosition.center) {
+    if (widget.alignment == null) {
       child = AnnotatedRegion<SystemUiOverlayStyle>(
         value:
             _isDark() ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
@@ -485,15 +569,17 @@ class _FlashState<K extends Object> extends State<Flash> {
       );
     }
 
-    if (widget.enableDrag) {
-      child = GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onVerticalDragUpdate: _handleDragUpdate,
-        onVerticalDragEnd: _handleDragEnd,
-        child: child,
-        excludeFromSemantics: true,
-      );
-    }
+    child = GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onHorizontalDragUpdate:
+          enableHorizontalDrag ? _handleHorizontalDragUpdate : null,
+      onHorizontalDragEnd:
+          enableHorizontalDrag ? _handleHorizontalDragEnd : null,
+      onVerticalDragUpdate: enableDrag ? _handleVerticalDragUpdate : null,
+      onVerticalDragEnd: enableDrag ? _handleVerticalDragEnd : null,
+      child: child,
+      excludeFromSemantics: true,
+    );
 
     child = DecoratedBox(
       decoration: BoxDecoration(
@@ -517,27 +603,19 @@ class _FlashState<K extends Object> extends State<Flash> {
       child: child,
     );
 
-    if (widget.position == FlashPosition.top) {
+    if (widget.alignment == null) {
       child = SlideTransition(
         key: _childKey,
-        position: _slideAnimation.drive(
-            Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero)),
-        child: child,
-      );
-    } else if (widget.position == FlashPosition.bottom) {
-      child = SlideTransition(
-        key: _childKey,
-        position: _slideAnimation.drive(
-            Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero)),
+        position: _moveAnimation,
         child: child,
       );
     } else {
       child = SlideTransition(
         key: _childKey,
-        position: _slideAnimation.drive(
-            Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero)),
+        position: _moveAnimation,
         child: FadeTransition(
-          opacity: _slideAnimation.drive(Tween<double>(begin: 0.0, end: 1.0)),
+          opacity:
+              animationController.drive(Tween<double>(begin: 0.0, end: 1.0)),
           child: child,
         ),
       );
@@ -578,19 +656,16 @@ class _FlashState<K extends Object> extends State<Flash> {
                 );
               },
             ),
-          if (widget.position == FlashPosition.center)
-            SafeArea(
-              child: Align(
-                alignment: widget.alignment ?? Alignment.center,
-                child: child,
-              ),
-            )
-          else
+          if (widget.alignment == null)
             Align(
               alignment: widget.position == FlashPosition.bottom
                   ? Alignment.bottomCenter
                   : Alignment.topCenter,
               child: child,
+            )
+          else
+            SafeArea(
+              child: Align(alignment: widget.alignment, child: child),
             ),
         ],
       ),
@@ -601,55 +676,152 @@ class _FlashState<K extends Object> extends State<Flash> {
   /// Called to create the animation that exposes the current progress of
   /// the transition controlled by the animation controller created by
   /// [FlashController.createAnimationController].
-  Animation<double> _createAnimation() {
+  Animation<Offset> _createAnimation() {
     assert(animationController != null);
+    Animatable<Offset> animatable;
+    if (widget.position == FlashPosition.top) {
+      animatable =
+          Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
+    } else if (widget.position == FlashPosition.bottom) {
+      animatable =
+          Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
+    } else {
+      animatable =
+          Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero);
+    }
     return CurvedAnimation(
       parent: animationController.view,
       curve: widget.forwardAnimationCurve,
       reverseCurve: widget.reverseAnimationCurve,
-    );
+    ).drive(animatable);
   }
 
-  void _handleDragUpdate(DragUpdateDetails details) {
+  void _handleHorizontalDragUpdate(DragUpdateDetails details) {
+    assert(widget.enableDrag);
+    if (_dismissUnderway) return;
+    _isDragging = true;
+    _isHorizontalDragging = true;
+    final double delta = details.primaryDelta;
+    final double oldDragExtent = _dragExtent;
+    switch (horizontalDismissDirection) {
+      case HorizontalDismissDirection.horizontal:
+        _dragExtent += delta;
+        break;
+      case HorizontalDismissDirection.endToStart:
+        switch (Directionality.of(context)) {
+          case TextDirection.rtl:
+            if (_dragExtent + delta > 0) _dragExtent += delta;
+            break;
+          case TextDirection.ltr:
+            if (_dragExtent + delta < 0) _dragExtent += delta;
+            break;
+        }
+        break;
+      case HorizontalDismissDirection.startToEnd:
+        switch (Directionality.of(context)) {
+          case TextDirection.rtl:
+            if (_dragExtent + delta < 0) _dragExtent += delta;
+            break;
+          case TextDirection.ltr:
+            if (_dragExtent + delta > 0) _dragExtent += delta;
+            break;
+        }
+        break;
+    }
+    if (oldDragExtent.sign != _dragExtent.sign) {
+      setState(() => _updateMoveAnimation());
+    }
+    if (_dragExtent > 0) {
+      animationController.value -= (_dragExtent - oldDragExtent) / _childWidth;
+    } else {
+      animationController.value += (_dragExtent - oldDragExtent) / _childWidth;
+    }
+  }
+
+  void _handleHorizontalDragEnd(DragEndDetails details) {
+    assert(enableHorizontalDrag);
+    if (_dismissUnderway) return;
+    var dragExtent = _dragExtent;
+    _isDragging = false;
+    _dragExtent = 0.0;
+    _isHorizontalDragging = false;
+    if (animationController.status == AnimationStatus.completed) {
+      setState(() => _moveAnimation = _animation);
+    }
+    if (details.velocity.pixelsPerSecond.dx.abs() > _kMinFlingVelocity) {
+      final double flingVelocity =
+          details.velocity.pixelsPerSecond.dx / _childHeight;
+      switch (horizontalDismissDirection) {
+        case HorizontalDismissDirection.horizontal:
+          if (dragExtent > 0) {
+            animationController.fling(velocity: -flingVelocity);
+          } else {
+            animationController.fling(velocity: flingVelocity);
+          }
+          break;
+        case HorizontalDismissDirection.endToStart:
+          switch (Directionality.of(context)) {
+            case TextDirection.rtl:
+              if (dragExtent > 0)
+                animationController.fling(velocity: -flingVelocity);
+              break;
+            case TextDirection.ltr:
+              if (dragExtent < 0)
+                animationController.fling(velocity: flingVelocity);
+              break;
+          }
+          break;
+        case HorizontalDismissDirection.startToEnd:
+          switch (Directionality.of(context)) {
+            case TextDirection.rtl:
+              if (dragExtent < 0)
+                animationController.fling(velocity: flingVelocity);
+              break;
+            case TextDirection.ltr:
+              if (dragExtent > 0)
+                animationController.fling(velocity: -flingVelocity);
+              break;
+          }
+          break;
+      }
+    } else if (animationController.value < _kDismissThreshold) {
+      animationController.fling(velocity: -1.0);
+      controller.dismissInternal();
+    } else {
+      animationController.forward();
+    }
+  }
+
+  void _handleVerticalDragUpdate(DragUpdateDetails details) {
     assert(widget.enableDrag);
     if (_dismissUnderway) return;
     _isDragging = true;
     if (widget.position == FlashPosition.top) {
-      animationController.value +=
-          details.primaryDelta / (_childHeight ?? details.primaryDelta);
+      animationController.value += details.primaryDelta / _childHeight;
     } else {
-      animationController.value -=
-          details.primaryDelta / (_childHeight ?? details.primaryDelta);
+      animationController.value -= details.primaryDelta / _childHeight;
     }
   }
 
-  void _handleDragEnd(DragEndDetails details) {
+  void _handleVerticalDragEnd(DragEndDetails details) {
     assert(widget.enableDrag);
     if (_dismissUnderway) return;
     _isDragging = false;
+    _dragExtent = 0.0;
+    _isHorizontalDragging = false;
     if (animationController.status == AnimationStatus.completed) {
-      setState(() => _slideAnimation = _animation);
+      setState(() => _moveAnimation = _animation);
     }
-    if (widget.position == FlashPosition.top &&
-        details.velocity.pixelsPerSecond.dy < -_minFlingVelocity) {
+    if (details.velocity.pixelsPerSecond.dy.abs() > _kMinFlingVelocity) {
       final double flingVelocity =
           details.velocity.pixelsPerSecond.dy / _childHeight;
-      if (animationController.value > 0.0) {
+      if (widget.position == FlashPosition.top) {
         animationController.fling(velocity: flingVelocity);
+      } else {
+        animationController.fling(velocity: -flingVelocity);
       }
-      controller.dismissInternal();
-    } else if ((widget.position == FlashPosition.center ||
-            widget.position == FlashPosition.bottom) &&
-        details.velocity.pixelsPerSecond.dy > _minFlingVelocity) {
-      final double flingVelocity =
-          -details.velocity.pixelsPerSecond.dy / _childHeight;
-      if (animationController.value > 0.0) {
-        animationController.fling(velocity: flingVelocity);
-      }
-      controller.dismissInternal();
-    } else if (animationController.value < _closeProgressThreshold) {
-      if (animationController.value > 0.0)
-        animationController.fling(velocity: -1.0);
+    } else if (animationController.value < _kDismissThreshold) {
+      animationController.fling(velocity: -1.0);
       controller.dismissInternal();
     } else {
       animationController.forward();
@@ -660,26 +832,57 @@ class _FlashState<K extends Object> extends State<Flash> {
     switch (status) {
       case AnimationStatus.completed:
         if (!_isDragging) {
-          setState(() => _slideAnimation = _animation);
+          setState(() => _moveAnimation = _animation);
         }
         break;
       case AnimationStatus.forward:
       case AnimationStatus.reverse:
         if (_isDragging) {
-          setState(() => _slideAnimation = animationController);
+          setState(() => _updateMoveAnimation());
         }
         break;
       case AnimationStatus.dismissed:
         break;
     }
   }
+
+  void _updateMoveAnimation() {
+    Animatable<Offset> animatable;
+    if (_isHorizontalDragging == true) {
+      final double end = _dragExtent.sign;
+      animatable = Tween<Offset>(begin: Offset(end, 0.0), end: Offset.zero);
+    } else {
+      if (widget.position == FlashPosition.top) {
+        animatable =
+            Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
+      } else {
+        animatable =
+            Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
+      }
+    }
+    _moveAnimation = animationController.drive(animatable);
+  }
 }
 
-/// Indicates if flash is going to start at the [top] or at the [center] or at the [bottom].
-enum FlashPosition { top, center, bottom }
+/// Indicates if flash is going to start at the [top] or at the [bottom].
+enum FlashPosition { top, bottom }
 
 /// Indicates if flash will be attached to the edge of the screen or not
 enum FlashStyle { floating, grounded }
+
+/// The direction in which a [HorizontalDismissDirection] can be dismissed.
+enum HorizontalDismissDirection {
+  /// The [HorizontalDismissDirection] can be dismissed by dragging either left or right.
+  horizontal,
+
+  /// The [HorizontalDismissDirection] can be dismissed by dragging in the reverse of the
+  /// reading direction (e.g., from right to left in left-to-right languages).
+  endToStart,
+
+  /// The [HorizontalDismissDirection] can be dismissed by dragging in the reading direction
+  /// (e.g., from left to right in left-to-right languages).
+  startToEnd,
+}
 
 class FlashBar extends StatefulWidget {
   FlashBar({

@@ -28,7 +28,6 @@ class FlashHelper {
       builder: (_, controller) {
         return Flash(
           controller: controller,
-          position: FlashPosition.center,
           alignment: Alignment(0, 0.5),
           margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           borderRadius: BorderRadius.circular(8.0),

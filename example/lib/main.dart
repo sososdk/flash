@@ -77,129 +77,127 @@ class _FlashPageState extends State<FlashPage> {
       appBar: AppBar(
         title: Text('Flash Demo'),
       ),
-      body: Container(
-        padding: const EdgeInsets.all(16.0),
-        width: double.infinity,
-        child: Column(
-          children: <Widget>[
-            Expanded(
-              child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
-                child: Wrap(
-                  spacing: 8.0,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  alignment: WrapAlignment.start,
-                  runAlignment: WrapAlignment.center,
-                  children: <Widget>[
-                    Row(
-                      children: <Widget>[
-                        Text('FlashBar'),
-                      ],
+      body: Column(
+        children: <Widget>[
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(16.0),
+              physics: AlwaysScrollableScrollPhysics(),
+              child: Wrap(
+                spacing: 8.0,
+                crossAxisAlignment: WrapCrossAlignment.center,
+                alignment: WrapAlignment.start,
+                runAlignment: WrapAlignment.center,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Text('FlashBar'),
+                    ],
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showBasicsFlash(),
+                    child: Text('Basics'),
+                  ),
+                  RaisedButton(
+                    onPressed: () =>
+                        _showBasicsFlash(duration: Duration(seconds: 2)),
+                    child: Text('Basics | Duration'),
+                  ),
+                  RaisedButton(
+                    onPressed: () =>
+                        _showBasicsFlash(flashStyle: FlashStyle.grounded),
+                    child: Text('Basics | grounded'),
+                  ),
+                  Row(children: <Widget>[]),
+                  RaisedButton(
+                    onPressed: () => _showTopFlash(),
+                    child: Text('Top'),
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showTopFlash(style: FlashStyle.grounded),
+                    child: Text('Top | grounded'),
+                  ),
+                  Row(children: <Widget>[]),
+                  RaisedButton(
+                    onPressed: () => _showBottomFlash(),
+                    child: Text('Bottom'),
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showBottomFlash(
+                        margin: const EdgeInsets.only(
+                            left: 12.0, right: 12.0, bottom: 34.0)),
+                    child: Text('Bottom | Margin'),
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showBottomFlash(persistent: false),
+                    child: Text('Bottom | No Persistent'),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('FLash Input'),
+                    ],
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showInputFlash(),
+                    child: Text('Show Input'),
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showInputFlash(
+                      persistent: false,
+                      onWillPop: () => Future.value(false),
                     ),
-                    RaisedButton(
-                      onPressed: () => _showBasicsFlash(),
-                      child: Text('Basics'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showBasicsFlash(duration: Duration(seconds: 2)),
-                      child: Text('Basics | Duration'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showBasicsFlash(flashStyle: FlashStyle.grounded),
-                      child: Text('Basics | grounded'),
-                    ),
-                    Row(children: <Widget>[]),
-                    RaisedButton(
-                      onPressed: () => _showTopFlash(),
-                      child: Text('Top'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showTopFlash(style: FlashStyle.grounded),
-                      child: Text('Top | grounded'),
-                    ),
-                    Row(children: <Widget>[]),
-                    RaisedButton(
-                      onPressed: () => _showBottomFlash(),
-                      child: Text('Bottom'),
-                    ),
-                    RaisedButton(
-                      onPressed: () => _showBottomFlash(
-                          margin: const EdgeInsets.only(
-                              left: 12.0, right: 12.0, bottom: 34.0)),
-                      child: Text('Bottom | Margin'),
-                    ),
-                    RaisedButton(
-                      onPressed: () => _showBottomFlash(persistent: false),
-                      child: Text('Bottom | No Persistent'),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Text('FLash Input'),
-                      ],
-                    ),
-                    RaisedButton(
-                      onPressed: () => _showInputFlash(),
-                      child: Text('Show Input'),
-                    ),
-                    RaisedButton(
-                      onPressed: () => _showInputFlash(
-                        persistent: false,
-                        onWillPop: () => Future.value(false),
-                      ),
-                      child: Text('Show Block Input'),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Text('Flash Toast'),
-                      ],
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showCenterFlash(position: FlashPosition.top),
-                      child: Text('Top'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showCenterFlash(position: FlashPosition.center),
-                      child: Text('Center'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showCenterFlash(position: FlashPosition.bottom),
-                      child: Text('Bottom'),
-                    ),
-                    RaisedButton(
-                      onPressed: () =>
-                          _showCenterFlash(alignment: Alignment(-0.8, 0.5)),
-                      child: Text('Custom Position'),
-                    ),
-                    Row(
-                      children: <Widget>[
-                        Text('Flash Dialog'),
-                      ],
-                    ),
-                    RaisedButton(
-                      onPressed: () => _showDialogFlash(),
-                      child: Text('Dialog'),
-                    ),
-                    RaisedButton(
-                      onPressed: () {
-                        Future.delayed(Duration(seconds: 2), () {
-                          _showDialogFlash();
-                        });
-                      },
-                      child: Text('Dialog Delay'),
-                    ),
-                  ],
-                ),
+                    child: Text('Show Block Input'),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Flash Toast'),
+                    ],
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showCenterFlash(
+                        position: FlashPosition.top,
+                        style: FlashStyle.floating),
+                    child: Text('Top'),
+                  ),
+                  RaisedButton(
+                    onPressed: () =>
+                        _showCenterFlash(alignment: Alignment.center),
+                    child: Text('Center'),
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showCenterFlash(
+                        position: FlashPosition.bottom,
+                        style: FlashStyle.floating),
+                    child: Text('Bottom'),
+                  ),
+                  RaisedButton(
+                    onPressed: () =>
+                        _showCenterFlash(alignment: const Alignment(0.0, 0.6)),
+                    child: Text('Custom Position'),
+                  ),
+                  Row(
+                    children: <Widget>[
+                      Text('Flash Dialog'),
+                    ],
+                  ),
+                  RaisedButton(
+                    onPressed: () => _showDialogFlash(),
+                    child: Text('Dialog'),
+                  ),
+                  RaisedButton(
+                    onPressed: () {
+                      Future.delayed(Duration(seconds: 2), () {
+                        _showDialogFlash();
+                      });
+                    },
+                    child: Text('Dialog Delay'),
+                  ),
+                ],
               ),
             ),
-            SafeArea(child: Container(), top: false),
-          ],
-        ),
+          ),
+          SafeArea(child: Container(), top: false),
+        ],
       ),
       floatingActionButton: Row(
         mainAxisAlignment: MainAxisAlignment.end,
@@ -251,6 +249,7 @@ class _FlashPageState extends State<FlashPage> {
           controller: controller,
           style: flashStyle,
           boxShadows: kElevationToShadow[4],
+          horizontalDismissDirection: HorizontalDismissDirection.horizontal,
           child: FlashBar(
             message: Text('This is a basic flash'),
           ),
@@ -384,7 +383,8 @@ class _FlashPageState extends State<FlashPage> {
   }
 
   void _showCenterFlash({
-    FlashPosition position = FlashPosition.center,
+    FlashPosition position,
+    FlashStyle style,
     Alignment alignment,
   }) {
     showFlash(
@@ -397,6 +397,7 @@ class _FlashPageState extends State<FlashPage> {
           borderRadius: BorderRadius.circular(8.0),
           borderColor: Colors.blue,
           position: position,
+          style: style,
           alignment: alignment,
           enableDrag: false,
           onTap: () => controller.dismiss(),
@@ -424,12 +425,11 @@ class _FlashPageState extends State<FlashPage> {
       persistent: false,
       transitionDuration: Duration(milliseconds: 300),
       builder: (_, controller) {
-        return Flash(
+        return Flash.dialog(
           controller: controller,
           margin: const EdgeInsets.only(left: 40.0, right: 40.0),
           borderRadius: BorderRadius.circular(8.0),
           borderColor: Colors.black38,
-          position: FlashPosition.center,
           barrierColor: Colors.black54,
           reverseAnimationCurve: Curves.linear,
           enableDrag: false,
