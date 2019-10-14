@@ -35,7 +35,7 @@ dependency:
 ```yaml
 dependencies:
   ...
-  flash: "^1.1.0"
+  flash: "^1.2.0"
 ```
 
 In your library add the following import:
