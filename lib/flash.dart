@@ -687,7 +687,7 @@ class _FlashState<K extends Object> extends State<Flash> {
           Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
     } else {
       animatable =
-          Tween<Offset>(begin: const Offset(0.0, 0.2), end: Offset.zero);
+          Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero);
     }
     return CurvedAnimation(
       parent: animationController.view,
@@ -751,37 +751,15 @@ class _FlashState<K extends Object> extends State<Flash> {
     if (details.velocity.pixelsPerSecond.dx.abs() > _kMinFlingVelocity) {
       final double flingVelocity =
           details.velocity.pixelsPerSecond.dx / _childHeight;
-      switch (horizontalDismissDirection) {
-        case HorizontalDismissDirection.horizontal:
-          if (dragExtent > 0) {
-            animationController.fling(velocity: -flingVelocity);
-          } else {
-            animationController.fling(velocity: flingVelocity);
-          }
+      switch (_describeFlingGesture(details.velocity.pixelsPerSecond.dx)) {
+        case _FlingGestureKind.none:
+          animationController.forward();
           break;
-        case HorizontalDismissDirection.endToStart:
-          switch (Directionality.of(context)) {
-            case TextDirection.rtl:
-              if (dragExtent > 0)
-                animationController.fling(velocity: -flingVelocity);
-              break;
-            case TextDirection.ltr:
-              if (dragExtent < 0)
-                animationController.fling(velocity: flingVelocity);
-              break;
-          }
+        case _FlingGestureKind.forward:
+          animationController.fling(velocity: -flingVelocity);
           break;
-        case HorizontalDismissDirection.startToEnd:
-          switch (Directionality.of(context)) {
-            case TextDirection.rtl:
-              if (dragExtent < 0)
-                animationController.fling(velocity: flingVelocity);
-              break;
-            case TextDirection.ltr:
-              if (dragExtent > 0)
-                animationController.fling(velocity: -flingVelocity);
-              break;
-          }
+        case _FlingGestureKind.reverse:
+          animationController.fling(velocity: flingVelocity);
           break;
       }
     } else if (animationController.value < _kDismissThreshold) {
@@ -790,6 +768,40 @@ class _FlashState<K extends Object> extends State<Flash> {
     } else {
       animationController.forward();
     }
+  }
+
+  _FlingGestureKind _describeFlingGesture(double dragExtent) {
+    _FlingGestureKind kind = _FlingGestureKind.none;
+    switch (horizontalDismissDirection) {
+      case HorizontalDismissDirection.horizontal:
+        if (dragExtent > 0) {
+          kind = _FlingGestureKind.forward;
+        } else {
+          kind = _FlingGestureKind.reverse;
+        }
+        break;
+      case HorizontalDismissDirection.endToStart:
+        switch (Directionality.of(context)) {
+          case TextDirection.rtl:
+            if (dragExtent > 0) kind = _FlingGestureKind.forward;
+            break;
+          case TextDirection.ltr:
+            if (dragExtent < 0) kind = _FlingGestureKind.reverse;
+            break;
+        }
+        break;
+      case HorizontalDismissDirection.startToEnd:
+        switch (Directionality.of(context)) {
+          case TextDirection.rtl:
+            if (dragExtent < 0) kind = _FlingGestureKind.reverse;
+            break;
+          case TextDirection.ltr:
+            if (dragExtent > 0) kind = _FlingGestureKind.forward;
+            break;
+        }
+        break;
+    }
+    return kind;
   }
 
   void _handleVerticalDragUpdate(DragUpdateDetails details) {
@@ -883,6 +895,8 @@ enum HorizontalDismissDirection {
   /// (e.g., from left to right in left-to-right languages).
   startToEnd,
 }
+
+enum _FlingGestureKind { none, forward, reverse }
 
 class FlashBar extends StatefulWidget {
   FlashBar({

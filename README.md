@@ -58,13 +58,6 @@ understanding of all the features offered by the library.
 ![toast](https://raw.githubusercontent.com/sososdk/tool/master/flash/toast.gif)
 ![dialog](https://raw.githubusercontent.com/sososdk/tool/master/flash/dialog.gif)
 
-# Roadmap
-These are some of the prioritized features in the pipeline awaiting to
-be implemented in the near future
-
-- [ ] Add `FlashTheme`
-- [ ] Add `FlashHelper` for example
-
 # Contribution
 
 I highly encourage the community to step forward and improve this

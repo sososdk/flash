@@ -1,3 +1,9 @@
+## [1.2.0] - 2019-10-14
+
+### Added
+- Dismiss with horizontal drag.
+- Added `FlashHelper` for example. 
+
 ## [1.1.0+2] - 2019-8-14
 
 ### Fixes
