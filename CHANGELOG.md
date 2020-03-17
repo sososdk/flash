@@ -1,3 +1,7 @@
+## [1.2.2] - 2020-3-17
+
+- Adjust message bottom margin.
+
 ## [1.2.1] - 2020-3-17
 
 - Remove deprecated method.

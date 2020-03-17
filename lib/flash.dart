@@ -985,7 +985,9 @@ class _FlashBarState extends State<FlashBar>
   final Duration _pulseAnimationDuration = Duration(seconds: 1);
 
   bool _isTitlePresent;
+  bool _isActionsPresent;
   double _messageTopMargin;
+  double _messageBottomMargin;
 
   FocusScopeNode _focusNode;
   FocusAttachment _focusAttachment;
@@ -999,6 +1001,8 @@ class _FlashBarState extends State<FlashBar>
 
     _isTitlePresent = (widget.title != null);
     _messageTopMargin = _isTitlePresent ? 6.0 : widget.padding.top;
+    _isActionsPresent = (widget.actions != null);
+    _messageBottomMargin = _isActionsPresent ? 6.0 : widget.padding.bottom;
 
     _configureProgressIndicatorAnimation();
 
@@ -1115,11 +1119,11 @@ class _FlashBarState extends State<FlashBar>
                   top: _messageTopMargin,
                   left: widget.padding.left,
                   right: widget.padding.right,
-                  bottom: widget.padding.bottom,
+                  bottom: _messageBottomMargin,
                 ),
                 child: _getMessage(),
               ),
-              if (widget.actions != null)
+              if (_isActionsPresent)
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
@@ -1164,7 +1168,7 @@ class _FlashBarState extends State<FlashBar>
                             top: _messageTopMargin,
                             left: 4.0,
                             right: widget.padding.right,
-                            bottom: widget.padding.bottom,
+                            bottom: _messageBottomMargin,
                           ),
                           child: _getMessage(),
                         ),
@@ -1173,7 +1177,7 @@ class _FlashBarState extends State<FlashBar>
                   ),
                 ],
               ),
-              if (widget.actions != null)
+              if (_isActionsPresent)
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
@@ -1214,7 +1218,7 @@ class _FlashBarState extends State<FlashBar>
                             top: _messageTopMargin,
                             left: widget.padding.left,
                             right: 4.0,
-                            bottom: widget.padding.bottom,
+                            bottom: _messageBottomMargin,
                           ),
                           child: _getMessage(),
                         ),
@@ -1227,7 +1231,7 @@ class _FlashBarState extends State<FlashBar>
                   ),
                 ],
               ),
-              if (widget.actions != null)
+              if (_isActionsPresent)
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
@@ -1273,7 +1277,7 @@ class _FlashBarState extends State<FlashBar>
                               top: _messageTopMargin,
                               left: 4.0,
                               right: 4.0,
-                              bottom: widget.padding.bottom,
+                              bottom: _messageBottomMargin,
                             ),
                             child: _getMessage(),
                           ),
@@ -1287,7 +1291,7 @@ class _FlashBarState extends State<FlashBar>
                   ],
                 ),
               ),
-              if (widget.actions != null)
+              if (_isActionsPresent)
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
