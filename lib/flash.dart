@@ -741,7 +741,6 @@ class _FlashState<K extends Object> extends State<Flash> {
   void _handleHorizontalDragEnd(DragEndDetails details) {
     assert(enableHorizontalDrag);
     if (_dismissUnderway) return;
-    var dragExtent = _dragExtent;
     _isDragging = false;
     _dragExtent = 0.0;
     _isHorizontalDragging = false;
@@ -1121,7 +1120,7 @@ class _FlashBarState extends State<FlashBar>
                 child: _getMessage(),
               ),
               if (widget.actions != null)
-                ButtonTheme.bar(
+                ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
                     children: widget.actions,
@@ -1175,7 +1174,7 @@ class _FlashBarState extends State<FlashBar>
                 ],
               ),
               if (widget.actions != null)
-                ButtonTheme.bar(
+                ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
                     children: widget.actions,
@@ -1229,7 +1228,7 @@ class _FlashBarState extends State<FlashBar>
                 ],
               ),
               if (widget.actions != null)
-                ButtonTheme.bar(
+                ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
                     children: widget.actions,
@@ -1289,7 +1288,7 @@ class _FlashBarState extends State<FlashBar>
                 ),
               ),
               if (widget.actions != null)
-                ButtonTheme.bar(
+                ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
                     children: widget.actions,

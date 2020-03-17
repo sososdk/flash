@@ -1,3 +1,8 @@
+## [1.2.1] - 2020-3-17
+
+- Remove deprecated method.
+- Remove unused variable. 
+
 ## [1.2.0] - 2019-10-14
 
 ### Added
