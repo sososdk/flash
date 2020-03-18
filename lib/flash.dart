@@ -9,18 +9,18 @@ import 'package:flutter/services.dart';
 const double _kMinFlingVelocity = 700.0;
 const double _kDismissThreshold = 0.5;
 
-typedef FlashBuilder = Widget Function(
-    BuildContext context, FlashController controller);
+typedef FlashBuilder<T> = Widget Function(
+    BuildContext context, FlashController<T> controller);
 
 Future<T> showFlash<T>({
   @required BuildContext context,
-  @required FlashBuilder builder,
+  @required FlashBuilder<T> builder,
   Duration duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool persistent = true,
   WillPopCallback onWillPop,
 }) {
-  return FlashController(
+  return FlashController<T>(
     context,
     builder,
     duration: duration,
@@ -34,7 +34,7 @@ class FlashController<T> {
   OverlayState overlay;
   final ModalRoute route;
   final BuildContext context;
-  final FlashBuilder builder;
+  final FlashBuilder<T> builder;
 
   /// How long until Flash will hide itself (be dismissed). To make it indefinite, leave it null.
   final Duration duration;

@@ -25,7 +25,7 @@ class FlashHelper {
     return showFlash<T>(
       context: context,
       duration: const Duration(seconds: 3),
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash.dialog(
           controller: controller,
           alignment: const Alignment(0, 0.5),
@@ -72,7 +72,7 @@ class FlashHelper {
     return showFlash<T>(
       context: context,
       duration: duration,
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash(
           controller: controller,
           horizontalDismissDirection: HorizontalDismissDirection.horizontal,
@@ -99,7 +99,7 @@ class FlashHelper {
     return showFlash<T>(
       context: context,
       duration: duration,
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash(
           controller: controller,
           horizontalDismissDirection: HorizontalDismissDirection.horizontal,
@@ -126,7 +126,7 @@ class FlashHelper {
     return showFlash<T>(
       context: context,
       duration: duration,
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash(
           controller: controller,
           horizontalDismissDirection: HorizontalDismissDirection.horizontal,
@@ -155,7 +155,7 @@ class FlashHelper {
     return showFlash<T>(
       context: context,
       duration: duration,
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash(
           controller: controller,
           horizontalDismissDirection: HorizontalDismissDirection.horizontal,
@@ -182,14 +182,14 @@ class FlashHelper {
     String title,
     @required String message,
     Widget negativeAction,
-    ActionCallback onNegativeActionTap,
+    ActionCallback negativeActionTap,
     Widget positiveAction,
     ActionCallback positiveActionTap,
   }) {
     return showFlash<T>(
       context: context,
       persistent: false,
-      builder: (_, controller) {
+      builder: (context, controller) {
         return Flash.dialog(
           controller: controller,
           backgroundColor: _backgroundColor(context),
@@ -203,9 +203,9 @@ class FlashHelper {
               if (negativeAction != null)
                 FlatButton(
                   child: negativeAction,
-                  onPressed: onNegativeActionTap == null
+                  onPressed: negativeActionTap == null
                       ? null
-                      : () => onNegativeActionTap(controller),
+                      : () => negativeActionTap(controller),
                 ),
               if (positiveAction != null)
                 FlatButton(
@@ -229,7 +229,7 @@ class FlashHelper {
       context: context,
       persistent: false,
       onWillPop: () => Future.value(false),
-      builder: (_, controller) {
+      builder: (context, FlashController<T> controller) {
         dismissCompleter.future.then((value) => controller.dismiss(value));
         return Flash.dialog(
           controller: controller,
@@ -240,6 +240,51 @@ class FlashHelper {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: const CircularProgressIndicator(strokeWidth: 2.0),
+          ),
+        );
+      },
+    );
+  }
+
+  static Future<String> inputDialog(
+    BuildContext context, {
+    String title,
+    String message,
+    String defaultValue,
+    bool persistent = true,
+    WillPopCallback onWillPop,
+  }) {
+    var editingController = TextEditingController(text: defaultValue);
+    return showFlash<String>(
+      context: context,
+      persistent: persistent,
+      onWillPop: onWillPop,
+      builder: (context, controller) {
+        var theme = Theme.of(context);
+        return Flash<String>.bar(
+          controller: controller,
+          barrierColor: Colors.black54,
+          borderWidth: 3,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(8.0)),
+          child: FlashBar(
+            title: title == null
+                ? null
+                : Text(title, style: TextStyle(fontSize: 24.0)),
+            message: message == null ? null : Text(message),
+            userInputForm: Form(
+              child: TextFormField(
+                controller: editingController,
+                autofocus: true,
+              ),
+            ),
+            leftBarIndicatorColor: theme.primaryColor,
+            primaryAction: IconButton(
+              onPressed: () {
+                var message = editingController.text;
+                controller.dismiss(message);
+              },
+              icon: Icon(Icons.send, color: theme.colorScheme.secondary),
+            ),
           ),
         );
       },

@@ -1,3 +1,7 @@
+## [1.2.3] - 2020-3-18
+
+- Fix `FlashBuilder` type not match.
+
 ## [1.2.2] - 2020-3-17
 
 - Adjust message bottom margin.
