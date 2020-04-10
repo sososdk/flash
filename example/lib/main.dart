@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:example/flash_helper.dart';
 import 'package:flash/flash.dart';
 import 'package:flutter/material.dart';
@@ -81,47 +82,68 @@ class _FlashPageState extends State<FlashPage> {
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
 
   @override
+  void initState() {
+    super.initState();
+    BackButtonInterceptor.add(onBackPressed);
+  }
+
+  @override
+  void dispose() {
+    BackButtonInterceptor.remove(onBackPressed);
+    super.dispose();
+  }
+
+  bool onBackPressed(bool stopDefaultButtonEvent) {
+    // Handle android back event here. WillPopScope is not recommended.
+    return false;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () => Future.value(true),
-      child: Scaffold(
-        key: _key,
-        resizeToAvoidBottomInset: false,
-        appBar: AppBar(
-          title: Text('Flash Demo'),
-          actions: <Widget>[
-            IconButton(
-                icon: Icon(Icons.info_outline),
-                onPressed: () {
-                  showDialog(
-                      context: context,
-                      builder: (_) {
-                        return AlertDialog(
-                          title: Text('Flash'),
-                          content: Text(
-                              '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.'),
-                          actions: <Widget>[
-                            FlatButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('YES'),
-                            ),
-                            FlatButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text('NO'),
-                            ),
-                          ],
-                        );
-                      });
-                })
-          ],
-        ),
-        body: Column(
-          children: <Widget>[
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16.0),
-                physics: AlwaysScrollableScrollPhysics(),
-                child: Wrap(
+    return Scaffold(
+      key: _key,
+      appBar: AppBar(
+        title: Text('Flash Demo'),
+        actions: <Widget>[
+          IconButton(
+              icon: Icon(Icons.info_outline),
+              onPressed: () {
+                showDialog(
+                    context: context,
+                    builder: (_) {
+                      return AlertDialog(
+                        title: Text('Flash'),
+                        content: Text(
+                            '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.'),
+                        actions: <Widget>[
+                          FlatButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('YES'),
+                          ),
+                          FlatButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: Text('NO'),
+                          ),
+                        ],
+                      );
+                    });
+              })
+        ],
+      ),
+      body: Column(
+        children: <Widget>[
+          TextField(
+            decoration: InputDecoration(
+              hintText: 'Test FocusScopeNode',
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16.0),
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.all(16.0),
+              physics: AlwaysScrollableScrollPhysics(),
+              children: [
+                Wrap(
                   spacing: 8.0,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   alignment: WrapAlignment.start,
@@ -280,16 +302,15 @@ class _FlashPageState extends State<FlashPage> {
                     ),
                   ],
                 ),
-              ),
+              ],
             ),
-            SafeArea(child: Container(), top: false),
-          ],
-        ),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => NextPage())),
-          child: Icon(Icons.navigate_next),
-        ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (context) => NextPage())),
+        child: Icon(Icons.navigate_next),
       ),
     );
   }

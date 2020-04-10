@@ -255,7 +255,7 @@ class FlashController<T> {
 }
 
 /// A highly customizable widget so you can notify your user when you fell like he needs a beautiful explanation.
-class Flash<T extends Object> extends StatefulWidget {
+class Flash<T> extends StatefulWidget {
   Flash({
     Key key,
     @required this.controller,
@@ -465,8 +465,12 @@ class Flash<T extends Object> extends StatefulWidget {
   State createState() => _FlashState<T>();
 }
 
-class _FlashState<K extends Object> extends State<Flash> {
+class _FlashState<T> extends State<Flash<T>> {
   final GlobalKey _childKey = GlobalKey(debugLabel: 'flashbar child');
+
+  /// The node this scope will use for its root [FocusScope] widget.
+  final FocusScopeNode focusScopeNode =
+      FocusScopeNode(debugLabel: '$_FlashState Focus Scope');
 
   double get _childWidth {
     final RenderBox renderBox = _childKey.currentContext.findRenderObject();
@@ -504,6 +508,20 @@ class _FlashState<K extends Object> extends State<Flash> {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
     _moveAnimation = _animation = _createAnimation();
+
+    if (controller.route?.isCurrent == true && !controller.persistent) {
+      controller?.route?.navigator?.focusScopeNode
+          ?.setFirstFocus(focusScopeNode);
+    }
+  }
+
+  @override
+  void didUpdateWidget(Flash<T> oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (controller.route?.isCurrent == true && !controller.persistent) {
+      controller?.route?.navigator?.focusScopeNode
+          ?.setFirstFocus(focusScopeNode);
+    }
   }
 
   bool get _dismissUnderway =>
@@ -512,6 +530,12 @@ class _FlashState<K extends Object> extends State<Flash> {
 
   bool _isDark() {
     return widget.brightness == Brightness.dark;
+  }
+
+  bool get _shouldIgnoreFocusRequest {
+    return controller.persistent ||
+        animationController.status == AnimationStatus.reverse ||
+        (controller.route?.navigator?.userGestureInProgress ?? false);
   }
 
   @override
@@ -634,6 +658,9 @@ class _FlashState<K extends Object> extends State<Flash> {
             AnimatedBuilder(
               animation: animationController,
               builder: (context, child) {
+                final bool ignoreEvents = _shouldIgnoreFocusRequest;
+                focusScopeNode.canRequestFocus = !ignoreEvents;
+
                 var value = animationController.value;
                 overlayBlur ??= 0.0;
                 overlayColor ??= Colors.transparent;
@@ -670,7 +697,7 @@ class _FlashState<K extends Object> extends State<Flash> {
         ],
       ),
     );
-    return child;
+    return FocusScope(node: focusScopeNode, child: child);
   }
 
   /// Called to create the animation that exposes the current progress of
@@ -989,9 +1016,6 @@ class _FlashBarState extends State<FlashBar>
   double _messageTopMargin;
   double _messageBottomMargin;
 
-  FocusScopeNode _focusNode;
-  FocusAttachment _focusAttachment;
-
   @override
   void initState() {
     super.initState();
@@ -1010,9 +1034,6 @@ class _FlashBarState extends State<FlashBar>
       _configurePulseAnimation();
       _fadeController?.forward();
     }
-
-    _focusNode = FocusScopeNode();
-    _focusAttachment = _focusNode.attach(context);
   }
 
   void _configureProgressIndicatorAnimation() {
@@ -1051,8 +1072,6 @@ class _FlashBarState extends State<FlashBar>
 
     widget.progressIndicatorController?.dispose();
 
-    _focusAttachment.detach();
-    _focusNode.dispose();
     super.dispose();
   }
 
@@ -1337,12 +1356,7 @@ class _FlashBarState extends State<FlashBar>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         if (widget.message != null) widget.message,
-        if (widget.userInputForm != null)
-          FocusScope(
-            child: widget.userInputForm,
-            node: _focusNode,
-            autofocus: true,
-          ),
+        if (widget.userInputForm != null) widget.userInputForm,
       ],
     );
   }

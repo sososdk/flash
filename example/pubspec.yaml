@@ -23,6 +23,8 @@ dependencies:
   flash:
     path: ../
 
+  back_button_interceptor: ^4.2.3
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

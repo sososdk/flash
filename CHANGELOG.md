@@ -1,3 +1,8 @@
+## [1.2.4] - 2020-4-10
+
+- Hide soft keyboard like a route when show a not persistent flash.
+- In the example, because WillPopScope conflicts with FlashController.onWillPop, use [BackButtonInterceptor](https://pub.dev/packages/back_button_interceptor) instead of WillPopScope.
+
 ## [1.2.3] - 2020-3-18
 
 - Fix `FlashBuilder` type not match.
