@@ -434,12 +434,16 @@ class _FlashPageState extends State<FlashPage> {
           forwardAnimationCurve: Curves.fastLinearToSlowEaseIn,
           child: FlashBar(
             title: Text('Hello Flash', style: TextStyle(fontSize: 24.0)),
-            message: Text('You can put any message of any length here.'),
-            userInputForm: Form(
-              child: TextFormField(
-                controller: editingController,
-                autofocus: true,
-              ),
+            message: Column(
+              children: [
+                Text('You can put any message of any length here.'),
+                Form(
+                  child: TextFormField(
+                    controller: editingController,
+                    autofocus: true,
+                  ),
+                ),
+              ],
             ),
             leftBarIndicatorColor: Colors.red,
             primaryAction: IconButton(

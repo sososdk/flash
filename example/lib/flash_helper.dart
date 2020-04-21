@@ -53,13 +53,13 @@ class FlashHelper {
 
   static TextStyle _titleStyle(BuildContext context, [Color color]) {
     var theme = Theme.of(context);
-    return (theme.dialogTheme?.titleTextStyle ?? theme.textTheme.title)
+    return (theme.dialogTheme?.titleTextStyle ?? theme.textTheme.headline6)
         .copyWith(color: color);
   }
 
   static TextStyle _contentStyle(BuildContext context, [Color color]) {
     var theme = Theme.of(context);
-    return (theme.dialogTheme?.contentTextStyle ?? theme.textTheme.body1)
+    return (theme.dialogTheme?.contentTextStyle ?? theme.textTheme.bodyText2)
         .copyWith(color: color);
   }
 
@@ -270,12 +270,16 @@ class FlashHelper {
             title: title == null
                 ? null
                 : Text(title, style: TextStyle(fontSize: 24.0)),
-            message: message == null ? null : Text(message),
-            userInputForm: Form(
-              child: TextFormField(
-                controller: editingController,
-                autofocus: true,
-              ),
+            message: Column(
+              children: [
+                if (message != null) Text(message),
+                Form(
+                  child: TextFormField(
+                    controller: editingController,
+                    autofocus: true,
+                  ),
+                )
+              ],
             ),
             leftBarIndicatorColor: theme.primaryColor,
             primaryAction: IconButton(

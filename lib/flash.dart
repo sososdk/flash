@@ -929,7 +929,7 @@ class FlashBar extends StatefulWidget {
     Key key,
     this.padding = const EdgeInsets.all(16),
     this.title,
-    this.message,
+    @required this.message,
     this.icon,
     this.shouldIconPulse = true,
     this.leftBarIndicatorColor,
@@ -939,8 +939,8 @@ class FlashBar extends StatefulWidget {
     this.progressIndicatorController,
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
-    this.userInputForm,
-  })  : assert(showProgressIndicator != null),
+  })  : assert(message != null),
+        assert(showProgressIndicator != null),
         super(key: key);
 
   /// The (optional) title of the flashbar is displayed in a large font at the top
@@ -994,9 +994,6 @@ class FlashBar extends StatefulWidget {
   /// The default follows material design guide line
   final EdgeInsets padding;
 
-  /// A [TextFormField] in case you want a simple user input. Every other widget is ignored if this is not null.
-  final Form userInputForm;
-
   @override
   _FlashBarState createState() => _FlashBarState();
 }
@@ -1019,9 +1016,6 @@ class _FlashBarState extends State<FlashBar>
   @override
   void initState() {
     super.initState();
-
-    assert(widget.userInputForm != null || widget.message != null,
-        "A message is mandatory if you are not using userInputForm. Set either a message or messageText");
 
     _isTitlePresent = (widget.title != null);
     _messageTopMargin = _isTitlePresent ? 6.0 : widget.padding.top;
@@ -1352,13 +1346,7 @@ class _FlashBarState extends State<FlashBar>
   }
 
   Widget _getMessage() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        if (widget.message != null) widget.message,
-        if (widget.userInputForm != null) widget.userInputForm,
-      ],
-    );
+    return widget.message;
   }
 
   Widget _getPrimaryAction() {

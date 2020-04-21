@@ -1,3 +1,7 @@
+## [1.3.0] - 2020-4-21
+
+- Remove `userInputForm`.
+
 ## [1.2.4] - 2020-4-10
 
 - Hide soft keyboard like a route when show a not persistent flash.
