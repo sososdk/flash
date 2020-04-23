@@ -63,6 +63,33 @@ class FlashHelper {
         .copyWith(color: color);
   }
 
+  static Future<T> infoBar<T>(
+    BuildContext context, {
+    String title,
+    @required String message,
+    Duration duration = const Duration(seconds: 3),
+  }) {
+    return showFlash<T>(
+      context: context,
+      duration: duration,
+      builder: (context, controller) {
+        return Flash(
+          controller: controller,
+          horizontalDismissDirection: HorizontalDismissDirection.horizontal,
+          backgroundColor: Colors.black87,
+          child: FlashBar(
+            title: title == null
+                ? null
+                : Text(title, style: _titleStyle(context, Colors.white)),
+            message: Text(message, style: _contentStyle(context, Colors.white)),
+            icon: Icon(Icons.info_outline, color: Colors.green[300]),
+            leftBarIndicatorColor: Colors.green[300],
+          ),
+        );
+      },
+    );
+  }
+
   static Future<T> successBar<T>(
     BuildContext context, {
     String title,
@@ -82,34 +109,7 @@ class FlashHelper {
                 ? null
                 : Text(title, style: _titleStyle(context, Colors.white)),
             message: Text(message, style: _contentStyle(context, Colors.white)),
-            icon: Icon(Icons.check_circle, color: Colors.green[300]),
-            leftBarIndicatorColor: Colors.green[300],
-          ),
-        );
-      },
-    );
-  }
-
-  static Future<T> informationBar<T>(
-    BuildContext context, {
-    String title,
-    @required String message,
-    Duration duration = const Duration(seconds: 3),
-  }) {
-    return showFlash<T>(
-      context: context,
-      duration: duration,
-      builder: (context, controller) {
-        return Flash(
-          controller: controller,
-          horizontalDismissDirection: HorizontalDismissDirection.horizontal,
-          backgroundColor: Colors.black87,
-          child: FlashBar(
-            title: title == null
-                ? null
-                : Text(title, style: _titleStyle(context, Colors.white)),
-            message: Text(message, style: _contentStyle(context, Colors.white)),
-            icon: Icon(Icons.info_outline, color: Colors.blue[300]),
+            icon: Icon(Icons.check_circle, color: Colors.blue[300]),
             leftBarIndicatorColor: Colors.blue[300],
           ),
         );
@@ -121,25 +121,30 @@ class FlashHelper {
     BuildContext context, {
     String title,
     @required String message,
+    ChildBuilder<T> primaryAction,
     Duration duration = const Duration(seconds: 3),
   }) {
     return showFlash<T>(
       context: context,
       duration: duration,
       builder: (context, controller) {
-        return Flash(
-          controller: controller,
-          horizontalDismissDirection: HorizontalDismissDirection.horizontal,
-          backgroundColor: Colors.black87,
-          child: FlashBar(
-            title: title == null
-                ? null
-                : Text(title, style: _titleStyle(context, Colors.white)),
-            message: Text(message, style: _contentStyle(context, Colors.white)),
-            icon: Icon(Icons.warning, color: Colors.red[300]),
-            leftBarIndicatorColor: Colors.red[300],
-          ),
-        );
+        return StatefulBuilder(builder: (context, setState) {
+          return Flash(
+            controller: controller,
+            horizontalDismissDirection: HorizontalDismissDirection.horizontal,
+            backgroundColor: Colors.black87,
+            child: FlashBar(
+              title: title == null
+                  ? null
+                  : Text(title, style: _titleStyle(context, Colors.white)),
+              message:
+                  Text(message, style: _contentStyle(context, Colors.white)),
+              primaryAction: primaryAction?.call(context, controller, setState),
+              icon: Icon(Icons.warning, color: Colors.red[300]),
+              leftBarIndicatorColor: Colors.red[300],
+            ),
+          );
+        });
       },
     );
   }
@@ -148,31 +153,28 @@ class FlashHelper {
     BuildContext context, {
     String title,
     @required String message,
-    @required Widget primaryAction,
-    @required ActionCallback onPrimaryActionTap,
+    @required ChildBuilder<T> primaryAction,
     Duration duration = const Duration(seconds: 3),
   }) {
     return showFlash<T>(
       context: context,
       duration: duration,
       builder: (context, controller) {
-        return Flash(
-          controller: controller,
-          horizontalDismissDirection: HorizontalDismissDirection.horizontal,
-          backgroundColor: Colors.black87,
-          child: FlashBar(
-            title: title == null
-                ? null
-                : Text(title, style: _titleStyle(context, Colors.white)),
-            message: Text(message, style: _contentStyle(context, Colors.white)),
-            primaryAction: FlatButton(
-              child: primaryAction,
-              onPressed: onPrimaryActionTap == null
+        return StatefulBuilder(builder: (context, setState) {
+          return Flash(
+            controller: controller,
+            horizontalDismissDirection: HorizontalDismissDirection.horizontal,
+            backgroundColor: Colors.black87,
+            child: FlashBar(
+              title: title == null
                   ? null
-                  : () => onPrimaryActionTap(controller),
+                  : Text(title, style: _titleStyle(context, Colors.white)),
+              message:
+                  Text(message, style: _contentStyle(context, Colors.white)),
+              primaryAction: primaryAction?.call(context, controller, setState),
             ),
-          ),
-        );
+          );
+        });
       },
     );
   }
@@ -181,41 +183,77 @@ class FlashHelper {
     BuildContext context, {
     String title,
     @required String message,
-    Widget negativeAction,
-    ActionCallback negativeActionTap,
-    Widget positiveAction,
-    ActionCallback positiveActionTap,
+    Color messageColor,
+    ChildBuilder<T> negativeAction,
+    ChildBuilder<T> positiveAction,
   }) {
     return showFlash<T>(
       context: context,
       persistent: false,
       builder: (context, controller) {
-        return Flash.dialog(
-          controller: controller,
-          backgroundColor: _backgroundColor(context),
-          margin: const EdgeInsets.only(left: 40.0, right: 40.0),
-          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-          child: FlashBar(
-            title:
-                title == null ? null : Text(title, style: _titleStyle(context)),
-            message: Text(message, style: _contentStyle(context)),
-            actions: <Widget>[
-              if (negativeAction != null)
-                FlatButton(
-                  child: negativeAction,
-                  onPressed: negativeActionTap == null
-                      ? null
-                      : () => negativeActionTap(controller),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Flash.dialog(
+              controller: controller,
+              backgroundColor: _backgroundColor(context),
+              margin: const EdgeInsets.only(left: 40.0, right: 40.0),
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              child: FlashBar(
+                title: title == null
+                    ? null
+                    : Text(title, style: _titleStyle(context)),
+                message:
+                    Text(message, style: _contentStyle(context, messageColor)),
+                actions: <Widget>[
+                  if (negativeAction != null)
+                    negativeAction(context, controller, setState),
+                  if (positiveAction != null)
+                    positiveAction(context, controller, setState),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  static Future<T> customDialog<T>(
+    BuildContext context, {
+    ChildBuilder<T> titleBuilder,
+    @required ChildBuilder messageBuilder,
+    ChildBuilder<T> negativeAction,
+    ChildBuilder<T> positiveAction,
+  }) {
+    return showFlash<T>(
+      context: context,
+      persistent: false,
+      builder: (context, controller) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Flash.dialog(
+              controller: controller,
+              backgroundColor: _backgroundColor(context),
+              margin: const EdgeInsets.only(left: 40.0, right: 40.0),
+              borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+              child: FlashBar(
+                title: DefaultTextStyle(
+                  style: _titleStyle(context),
+                  child: titleBuilder?.call(context, controller, setState),
                 ),
-              if (positiveAction != null)
-                FlatButton(
-                  child: positiveAction,
-                  onPressed: positiveActionTap == null
-                      ? null
-                      : () => positiveActionTap(controller),
+                message: DefaultTextStyle(
+                  style: _contentStyle(context),
+                  child: messageBuilder.call(context, controller, setState),
                 ),
-            ],
-          ),
+                actions: <Widget>[
+                  if (negativeAction != null)
+                    negativeAction(context, controller, setState),
+                  if (positiveAction != null)
+                    positiveAction(context, controller, setState),
+                ],
+              ),
+            );
+          },
         );
       },
     );
@@ -278,7 +316,7 @@ class FlashHelper {
                     controller: editingController,
                     autofocus: true,
                   ),
-                )
+                ),
               ],
             ),
             leftBarIndicatorColor: theme.primaryColor,
@@ -296,4 +334,5 @@ class FlashHelper {
   }
 }
 
-typedef ActionCallback = void Function(FlashController controller);
+typedef ChildBuilder<T> = Widget Function(
+    BuildContext context, FlashController<T> controller, StateSetter setState);

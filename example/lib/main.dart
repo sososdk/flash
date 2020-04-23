@@ -247,7 +247,7 @@ class _FlashPageState extends State<FlashPage> {
                       child: Text('Success Bar'),
                     ),
                     RaisedButton(
-                      onPressed: () => FlashHelper.informationBar(context,
+                      onPressed: () => FlashHelper.infoBar(context,
                           message: 'Place information here!'),
                       child: Text('Information Bar'),
                     ),
@@ -259,9 +259,12 @@ class _FlashPageState extends State<FlashPage> {
                     RaisedButton(
                       onPressed: () => FlashHelper.actionBar(context,
                           message: 'Place error here!',
-                          primaryAction: Text('Done'),
-                          onPrimaryActionTap: (controller) =>
-                              controller.dismiss()),
+                          primaryAction: (context, controller, setState) {
+                        return FlatButton(
+                          child: Text('Done'),
+                          onPressed: () => controller.dismiss(),
+                        );
+                      }),
                       child: Text('Action Bar'),
                     ),
                     RaisedButton(
@@ -502,14 +505,24 @@ class _FlashPageState extends State<FlashPage> {
   }
 
   void _showDialogFlash() {
-    FlashHelper.simpleDialog(context,
-        title: 'Flash Dialog',
-        message:
-            '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.',
-        negativeAction: Text('NO'),
-        negativeActionTap: (controller) => controller.dismiss(),
-        positiveAction: Text('YES'),
-        positiveActionTap: (controller) => controller.dismiss());
+    FlashHelper.simpleDialog(
+      context,
+      title: 'Flash Dialog',
+      message:
+          '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.',
+      negativeAction: (context, controller, setState) {
+        return FlatButton(
+          child: Text('NO'),
+          onPressed: () => controller.dismiss(),
+        );
+      },
+      positiveAction: (context, controller, setState) {
+        return FlatButton(
+          child: Text('YES'),
+          onPressed: () => controller.dismiss(),
+        );
+      },
+    );
   }
 
   void _showMessage(String message) {
