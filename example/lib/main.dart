@@ -1,17 +1,27 @@
 import 'dart:async';
 
 import 'package:back_button_interceptor/back_button_interceptor.dart';
+import 'package:device_preview/device_preview.dart';
 import 'package:example/flash_helper.dart';
 import 'package:flash/flash.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(App());
+void main() => runApp(
+      DevicePreview(
+        enabled: kIsWeb,
+        usePreferences: true,
+        builder: (context) => App(),
+      ),
+    );
 
 class App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      builder: DevicePreview.appBuilder,
+      locale: DevicePreview.of(context).locale,
       title: 'Flash Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,

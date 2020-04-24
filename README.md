@@ -3,6 +3,8 @@
 ⚡️A highly customizable, powerful and easy-to-use alerting library for
 Flutter.
 
+Website: [https://sososdk.github.io/flash](https://sososdk.github.io/flash)
+
 ### Specs
 [![pub](https://img.shields.io/pub/v/flash.svg?style=flat)](https://pub.dev/packages/flash)
 
