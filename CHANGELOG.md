@@ -1,3 +1,7 @@
+## [1.3.1] - 2020-4-25
+
+- Add `FlashController.isDisposed` .
+
 ## [1.3.0] - 2020-4-21
 
 - Remove `userInputForm`.

@@ -104,6 +104,8 @@ class FlashController<T> {
       ..addStatusListener(_handleStatusChanged);
   }
 
+  bool get isDisposed => _transitionCompleter.isCompleted;
+
   /// A future that completes when this flash is popped.
   ///
   /// The future completes with the value given to [dismiss], if any.

@@ -1,11 +1,21 @@
 import 'dart:async';
+import 'dart:collection';
 
 import 'package:flash/flash.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+class _MessageItem<T> {
+  final String message;
+  Completer<Future<T>> completer;
+
+  _MessageItem(this.message) : completer = Completer<Future<T>>();
+}
+
 class FlashHelper {
   static Completer<BuildContext> _buildCompleter = Completer<BuildContext>();
+  static Queue<_MessageItem> _messageQueue = Queue<_MessageItem>();
+  static Completer _previousCompleter;
 
   static void init(BuildContext context) {
     if (_buildCompleter?.isCompleted == false) {
@@ -14,36 +24,59 @@ class FlashHelper {
   }
 
   static void dispose() {
+    _messageQueue.clear();
+
     if (_buildCompleter?.isCompleted == false) {
-      _buildCompleter.completeError(FlutterError('disposed'));
+      _buildCompleter.completeError('NotInitalize');
     }
     _buildCompleter = Completer<BuildContext>();
   }
 
   static Future<T> toast<T>(String message) async {
     var context = await _buildCompleter.future;
-    return showFlash<T>(
-      context: context,
-      duration: const Duration(seconds: 3),
-      builder: (context, controller) {
-        return Flash.dialog(
-          controller: controller,
-          alignment: const Alignment(0, 0.5),
-          margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          borderRadius: const BorderRadius.all(Radius.circular(8.0)),
-          enableDrag: false,
-          backgroundColor: Colors.black87,
-          child: DefaultTextStyle(
-            style: const TextStyle(fontSize: 16.0, color: Colors.white),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-              child: Text(message),
+
+    // Wait previous toast dismissed.
+    if (_previousCompleter?.isCompleted == false) {
+      var item = _MessageItem<T>(message);
+      _messageQueue.add(item);
+      return await item.completer.future;
+    }
+
+    _previousCompleter = Completer();
+
+    Future<T> showToast(String message) {
+      return showFlash<T>(
+        context: context,
+        builder: (context, controller) {
+          return Flash.dialog(
+            controller: controller,
+            alignment: const Alignment(0, 0.5),
+            margin: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            borderRadius: const BorderRadius.all(Radius.circular(8.0)),
+            enableDrag: false,
+            backgroundColor: Colors.black87,
+            child: DefaultTextStyle(
+              style: const TextStyle(fontSize: 16.0, color: Colors.white),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Text(message),
+              ),
             ),
-          ),
-        );
-      },
-    );
+          );
+        },
+        duration: const Duration(seconds: 3),
+      ).whenComplete(() {
+        if (_messageQueue.isNotEmpty) {
+          var item = _messageQueue.removeFirst();
+          item.completer.complete(showToast(item.message));
+        } else {
+          _previousCompleter.complete();
+        }
+      });
+    }
+
+    return showToast(message);
   }
 
   static Color _backgroundColor(BuildContext context) {
@@ -263,12 +296,9 @@ class FlashHelper {
     BuildContext context, {
     @required Completer<T> dismissCompleter,
   }) {
-    return showFlash<T>(
-      context: context,
-      persistent: false,
-      onWillPop: () => Future.value(false),
-      builder: (context, FlashController<T> controller) {
-        dismissCompleter.future.then((value) => controller.dismiss(value));
+    var controller = FlashController<T>(
+      context,
+      (context, FlashController<T> controller) {
         return Flash.dialog(
           controller: controller,
           barrierDismissible: false,
@@ -281,7 +311,11 @@ class FlashHelper {
           ),
         );
       },
+      persistent: false,
+      onWillPop: () => Future.value(false),
     );
+    dismissCompleter.future.then((value) => controller.dismiss(value));
+    return controller.show();
   }
 
   static Future<String> inputDialog(
