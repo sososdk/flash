@@ -205,7 +205,7 @@ class _FlashPageState extends State<FlashPage> {
                     ),
                     Row(
                       children: <Widget>[
-                        Text('FLash Input'),
+                        Text('Flash Input'),
                       ],
                     ),
                     RaisedButton(
@@ -243,7 +243,7 @@ class _FlashPageState extends State<FlashPage> {
                     ),
                     Row(
                       children: <Widget>[
-                        Text('FLash Helper'),
+                        Text('Flash Helper'),
                       ],
                     ),
                     RaisedButton(
