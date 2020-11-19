@@ -1,3 +1,8 @@
+## [1.4.0-nullsafety] - 2020-11-19
+
+- Migrate to null safety.
+- Update example.
+
 ## [1.3.1] - 2020-4-25
 
 - Add `FlashController.isDisposed` .
