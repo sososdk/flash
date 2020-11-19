@@ -1,27 +1,39 @@
 import 'dart:async';
 
-import 'package:back_button_interceptor/back_button_interceptor.dart';
-import 'package:device_preview/device_preview.dart';
+// import 'package:back_button_interceptor/back_button_interceptor.dart';
+// import 'package:device_preview/device_preview.dart';
 import 'package:example/flash_helper.dart';
 import 'package:flash/flash.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-void main() => runApp(
-      DevicePreview(
-        enabled: kIsWeb,
-        usePreferences: true,
-        builder: (context) => App(),
-      ),
-    );
+void main() => runApp(App());
 
 class App extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      builder: DevicePreview.appBuilder,
-      locale: DevicePreview.of(context).locale,
+      builder: (context, child) {
+        if (kIsWeb) {
+          return Stack(
+            alignment: Alignment.center,
+            children: [
+              ClipPath(
+                child: FittedBox(
+                  child: SizedBox(
+                    width: 414,
+                    height: 896,
+                    child: child,
+                  ),
+                ),
+              ),
+            ],
+          );
+        } else {
+          return child!;
+        }
+      },
       title: 'Flash Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -32,7 +44,7 @@ class App extends StatelessWidget {
 }
 
 class HomePage extends StatefulWidget {
-  HomePage({Key key, this.title}) : super(key: key);
+  HomePage({Key? key, required this.title}) : super(key: key);
 
   final String title;
 
@@ -67,7 +79,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+          Navigator.of(context)?.push(MaterialPageRoute(builder: (context) {
             return Overlay(
               initialEntries: [
                 OverlayEntry(builder: (context) {
@@ -91,22 +103,22 @@ class FlashPage extends StatefulWidget {
 class _FlashPageState extends State<FlashPage> {
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
 
-  @override
-  void initState() {
-    super.initState();
-    BackButtonInterceptor.add(onBackPressed);
-  }
-
-  @override
-  void dispose() {
-    BackButtonInterceptor.remove(onBackPressed);
-    super.dispose();
-  }
-
-  bool onBackPressed(bool stopDefaultButtonEvent) {
-    // Handle android back event here. WillPopScope is not recommended.
-    return false;
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   BackButtonInterceptor.add(onBackPressed);
+  // }
+  //
+  // @override
+  // void dispose() {
+  //   BackButtonInterceptor.remove(onBackPressed);
+  //   super.dispose();
+  // }
+  //
+  // bool onBackPressed(bool stopDefaultButtonEvent, RouteInfo routeInfo) {
+  //   // Handle android back event here. WillPopScope is not recommended.
+  //   return false;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -322,14 +334,14 @@ class _FlashPageState extends State<FlashPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context)
-            .push(MaterialPageRoute(builder: (context) => NextPage())),
+            ?.push(MaterialPageRoute(builder: (context) => NextPage())),
         child: Icon(Icons.navigate_next),
       ),
     );
   }
 
   void _showBasicsFlash({
-    Duration duration,
+    Duration? duration,
     flashStyle = FlashStyle.floating,
   }) {
     showFlash(
@@ -431,7 +443,7 @@ class _FlashPageState extends State<FlashPage> {
 
   void _showInputFlash({
     bool persistent = true,
-    WillPopCallback onWillPop,
+    WillPopCallback? onWillPop,
   }) {
     var editingController = TextEditingController();
     showFlash(
@@ -478,9 +490,9 @@ class _FlashPageState extends State<FlashPage> {
   }
 
   void _showCenterFlash({
-    FlashPosition position,
-    FlashStyle style,
-    Alignment alignment,
+    FlashPosition? position,
+    FlashStyle? style,
+    Alignment? alignment,
   }) {
     showFlash(
       context: context,

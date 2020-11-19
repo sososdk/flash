@@ -13,12 +13,12 @@ typedef FlashBuilder<T> = Widget Function(
     BuildContext context, FlashController<T> controller);
 
 Future<T> showFlash<T>({
-  @required BuildContext context,
-  @required FlashBuilder<T> builder,
-  Duration duration,
+  required BuildContext context,
+  required FlashBuilder<T> builder,
+  Duration? duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool persistent = true,
-  WillPopCallback onWillPop,
+  WillPopCallback? onWillPop,
 }) {
   return FlashController<T>(
     context,
@@ -31,16 +31,16 @@ Future<T> showFlash<T>({
 }
 
 class FlashController<T> {
-  OverlayState overlay;
-  final ModalRoute route;
+  OverlayState? overlay;
+  final ModalRoute? route;
   final BuildContext context;
   final FlashBuilder<T> builder;
 
   /// How long until Flash will hide itself (be dismissed). To make it indefinite, leave it null.
-  final Duration duration;
+  final Duration? duration;
 
   /// Use it to speed up or slow down the animation duration
-  final Duration transitionDuration;
+  final Duration? transitionDuration;
 
   /// Whether this Flash is add to route.
   ///
@@ -68,15 +68,15 @@ class FlashController<T> {
   ///
   /// If the callback returns a Future that resolves to false, the enclosing
   /// route will not be popped.
-  final WillPopCallback onWillPop;
+  final WillPopCallback? onWillPop;
 
   /// The animation controller that the route uses to drive the transitions.
   ///
   /// The animation itself is exposed by the [animation] property.
   AnimationController get controller => _controller;
-  AnimationController _controller;
-  Timer _timer;
-  LocalHistoryEntry _historyEntry;
+  late AnimationController _controller;
+  Timer? _timer;
+  LocalHistoryEntry? _historyEntry;
   bool _dismissed = false;
   bool _removedHistoryEntry = false;
 
@@ -87,11 +87,8 @@ class FlashController<T> {
     this.transitionDuration = const Duration(milliseconds: 500),
     this.persistent = true,
     this.onWillPop,
-  })  : assert(context != null),
-        assert(builder != null),
-        assert(persistent != null),
-        route = ModalRoute.of(context) {
-    var rootOverlay = Navigator.of(context).overlay;
+  }) : route = ModalRoute.of(context) {
+    var rootOverlay = Navigator.of(context)?.overlay;
     if (persistent) {
       overlay = rootOverlay;
     } else {
@@ -112,15 +109,15 @@ class FlashController<T> {
   Future<T> get popped => _transitionCompleter.future;
   final Completer<T> _transitionCompleter = Completer<T>();
 
-  List<OverlayEntry> _overlayEntries;
-  T _result;
+  late List<OverlayEntry> _overlayEntries;
+  T? _result;
 
   Future<T> show() {
     assert(!_transitionCompleter.isCompleted,
         'Cannot show a $runtimeType after disposing it.');
 
-    if (onWillPop != null) route?.addScopedWillPopCallback(onWillPop);
-    overlay.insertAll(_overlayEntries = _createOverlayEntries());
+    if (onWillPop != null) route?.addScopedWillPopCallback(onWillPop!);
+    overlay!.insertAll(_overlayEntries = _createOverlayEntries());
     _controller.forward();
     _configureTimer();
     _configurePersistent();
@@ -134,11 +131,11 @@ class FlashController<T> {
   AnimationController createAnimationController() {
     assert(!_transitionCompleter.isCompleted,
         'Cannot reuse a $runtimeType after disposing it.');
-    final Duration duration = transitionDuration;
+    final duration = transitionDuration;
     return AnimationController(
       duration: duration,
       debugLabel: debugLabel,
-      vsync: overlay,
+      vsync: overlay!,
     );
   }
 
@@ -183,18 +180,18 @@ class FlashController<T> {
             'Cannot reuse a $runtimeType after disposing it.');
         _removedHistoryEntry = true;
         if (!_dismissed) {
-          if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop);
+          if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
           _cancelTimer();
           _controller.reverse();
         }
       });
-      route?.addLocalHistoryEntry(_historyEntry);
+      route?.addLocalHistoryEntry(_historyEntry!);
     }
   }
 
   void _removeLocalHistory() {
     if (!persistent && !_removedHistoryEntry) {
-      _historyEntry.remove();
+      _historyEntry!.remove();
       _removedHistoryEntry = true;
     }
   }
@@ -202,9 +199,9 @@ class FlashController<T> {
   void _configureTimer() {
     if (duration != null) {
       if (_timer?.isActive == true) {
-        _timer.cancel();
+        _timer!.cancel();
       }
-      _timer = Timer(duration, () {
+      _timer = Timer(duration!, () {
         dismiss();
       });
     } else {
@@ -214,24 +211,24 @@ class FlashController<T> {
 
   void _cancelTimer() {
     if (_timer?.isActive == true) {
-      _timer.cancel();
+      _timer!.cancel();
     }
   }
 
   @protected
   void dismissInternal() {
     _dismissed = true;
-    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop);
+    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
     _removeLocalHistory();
     _cancelTimer();
   }
 
-  void dismiss([T result]) {
+  void dismiss([T? result]) {
     assert(!_transitionCompleter.isCompleted,
         'Cannot reuse a $runtimeType after disposing it.');
     _dismissed = true;
     _result = result;
-    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop);
+    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
     _removeLocalHistory();
     _cancelTimer();
     _controller.reverse();
@@ -259,9 +256,9 @@ class FlashController<T> {
 /// A highly customizable widget so you can notify your user when you fell like he needs a beautiful explanation.
 class Flash<T> extends StatefulWidget {
   Flash({
-    Key key,
-    @required this.controller,
-    @required this.child,
+    Key? key,
+    required this.controller,
+    required this.child,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -283,23 +280,18 @@ class Flash<T> extends StatefulWidget {
     this.barrierBlur,
     this.barrierColor,
     this.barrierDismissible = true,
-  })  : assert(controller != null),
-        assert(child != null),
-        assert(margin != null),
-        assert(brightness != null),
-        assert(() {
+  })  : assert(() {
           if (alignment == null)
             return style != null && position != null;
           else
             return style == null && position == null;
         }()),
-        assert(barrierDismissible != null),
         super(key: key);
 
   Flash.bar({
-    Key key,
-    @required this.controller,
-    @required this.child,
+    Key? key,
+    required this.controller,
+    required this.child,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -321,19 +313,14 @@ class Flash<T> extends StatefulWidget {
     this.barrierColor,
     this.barrierDismissible = true,
   })  : alignment = null,
-        assert(controller != null),
-        assert(child != null),
-        assert(margin != null),
-        assert(brightness != null),
         assert(style != null),
         assert(position != null),
-        assert(barrierDismissible != null),
         super(key: key);
 
   Flash.dialog({
-    Key key,
-    @required this.controller,
-    @required this.child,
+    Key? key,
+    required this.controller,
+    required this.child,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -355,12 +342,7 @@ class Flash<T> extends StatefulWidget {
     this.barrierDismissible = true,
   })  : style = null,
         position = null,
-        assert(controller != null),
-        assert(child != null),
-        assert(margin != null),
-        assert(brightness != null),
         assert(alignment != null),
-        assert(barrierDismissible != null),
         super(key: key);
 
   final FlashController controller;
@@ -379,13 +361,13 @@ class Flash<T> extends StatefulWidget {
   /// [boxShadows] The shadows generated by Flashbar. Leave it null if you don't want a shadow.
   /// You can use more than one if you feel the need.
   /// Check (this example)[https://github.com/flutter/flutter/blob/master/packages/flutter/lib/src/material/shadows.dart]
-  final List<BoxShadow> boxShadows;
+  final List<BoxShadow>? boxShadows;
 
   /// Makes [backgroundColor] be ignored.
-  final Gradient backgroundGradient;
+  final Gradient? backgroundGradient;
 
   /// A callback that registers the user's click anywhere. An alternative to [primaryAction]
-  final GestureTapCallback onTap;
+  final GestureTapCallback? onTap;
 
   /// Determines if the user can swipe vertically to dismiss the bar.
   /// It is recommended that you set [duration] != null if this is false.
@@ -395,7 +377,7 @@ class Flash<T> extends StatefulWidget {
   /// Determines if the user can swipe horizontally to dismiss the bar.
   /// It is recommended that you set [duration] != null if this is false.
   /// If the user swipes to dismiss no value will be returned.
-  final HorizontalDismissDirection horizontalDismissDirection;
+  final HorizontalDismissDirection? horizontalDismissDirection;
 
   /// The duration of the animation to show when the system keyboard intrudes
   /// into the space that the dialog is placed in.
@@ -413,23 +395,23 @@ class Flash<T> extends StatefulWidget {
   final EdgeInsets margin;
 
   /// Adds a radius to all corners of Flash. Best combined with [margin].
-  final BorderRadius borderRadius;
+  final BorderRadius? borderRadius;
 
   /// Adds a border to every side of Flash
-  final Color borderColor;
+  final Color? borderColor;
 
   /// Changes the width of the border if [borderColor] is specified
   final double borderWidth;
 
   /// How to align the flash.
-  final AlignmentGeometry alignment;
+  final AlignmentGeometry? alignment;
 
   /// Flash can be based on [FlashPosition.top] or on [FlashPosition.bottom] of your screen.
-  final FlashPosition position;
+  final FlashPosition? position;
 
   /// Flash can be floating or be grounded to the edge of the screen.
   /// If [flashStyle] is grounded, I do not recommend using [margin] or [borderRadius].
-  final FlashStyle style;
+  final FlashStyle? style;
 
   /// The [Curve] animation used when show() is called. [Curves.fastOutSlowIn] is default
   final Curve forwardAnimationCurve;
@@ -440,11 +422,11 @@ class Flash<T> extends StatefulWidget {
   /// Only takes effect if [FlashController.persistent] is false.
   /// Creates a blurred overlay that prevents the user from interacting with the screen.
   /// The greater the value, the greater the blur.
-  final double barrierBlur;
+  final double? barrierBlur;
 
   /// Only takes effect if [FlashController.persistent] is false.
   /// Make sure you use a color with transparency here e.g. Colors.grey[600].withOpacity(0.2).
-  final Color barrierColor;
+  final Color? barrierColor;
 
   /// Only takes effect if [FlashController.persistent] is false, and [barrierBlur] or [barrierColor] is not null.
   /// Whether you can dismiss this flashbar by tapping the modal barrier.
@@ -475,18 +457,18 @@ class _FlashState<T> extends State<Flash<T>> {
       FocusScopeNode(debugLabel: '$_FlashState Focus Scope');
 
   double get _childWidth {
-    final RenderBox renderBox = _childKey.currentContext.findRenderObject();
-    return renderBox.size.width;
+    final box = _childKey.currentContext?.findRenderObject() as RenderBox;
+    return box.size.width;
   }
 
   double get _childHeight {
-    final RenderBox renderBox = _childKey.currentContext.findRenderObject();
-    return renderBox.size.height;
+    final box = _childKey.currentContext?.findRenderObject() as RenderBox;
+    return box.size.height;
   }
 
   bool get enableDrag => widget.enableDrag;
 
-  HorizontalDismissDirection get horizontalDismissDirection =>
+  HorizontalDismissDirection? get horizontalDismissDirection =>
       widget.horizontalDismissDirection;
 
   bool get enableHorizontalDrag => widget.horizontalDismissDirection != null;
@@ -495,9 +477,9 @@ class _FlashState<T> extends State<Flash<T>> {
 
   AnimationController get animationController => controller.controller;
 
-  Animation<Offset> _animation;
+  late Animation<Offset> _animation;
 
-  Animation<Offset> _moveAnimation;
+  late Animation<Offset> _moveAnimation;
 
   bool _isDragging = false;
 
@@ -512,8 +494,7 @@ class _FlashState<T> extends State<Flash<T>> {
     _moveAnimation = _animation = _createAnimation();
 
     if (controller.route?.isCurrent == true && !controller.persistent) {
-      controller?.route?.navigator?.focusScopeNode
-          ?.setFirstFocus(focusScopeNode);
+      controller.route?.navigator?.focusScopeNode.setFirstFocus(focusScopeNode);
     }
   }
 
@@ -521,8 +502,7 @@ class _FlashState<T> extends State<Flash<T>> {
   void didUpdateWidget(Flash<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (controller.route?.isCurrent == true && !controller.persistent) {
-      controller?.route?.navigator?.focusScopeNode
-          ?.setFirstFocus(focusScopeNode);
+      controller.route?.navigator?.focusScopeNode.setFirstFocus(focusScopeNode);
     }
   }
 
@@ -557,7 +537,7 @@ class _FlashState<T> extends State<Flash<T>> {
         gradient: widget.backgroundGradient,
         borderRadius: widget.borderRadius,
         border: widget.borderColor != null
-            ? Border.all(color: widget.borderColor, width: widget.borderWidth)
+            ? Border.all(color: widget.borderColor!, width: widget.borderWidth)
             : null,
       ),
       child: child,
@@ -663,9 +643,9 @@ class _FlashState<T> extends State<Flash<T>> {
                 final bool ignoreEvents = _shouldIgnoreFocusRequest;
                 focusScopeNode.canRequestFocus = !ignoreEvents;
 
-                var value = animationController.value;
-                overlayBlur ??= 0.0;
-                overlayColor ??= Colors.transparent;
+                final value = animationController.value;
+                final blur = overlayBlur ?? 0.0;
+                final color = overlayColor ?? Colors.transparent;
                 return GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onTap: widget.barrierDismissible
@@ -673,13 +653,12 @@ class _FlashState<T> extends State<Flash<T>> {
                       : null,
                   child: BackdropFilter(
                     filter: ImageFilter.blur(
-                      sigmaX: overlayBlur * value,
-                      sigmaY: overlayBlur * value,
+                      sigmaX: blur * value,
+                      sigmaY: blur * value,
                     ),
                     child: Container(
                       constraints: BoxConstraints.expand(),
-                      color: overlayColor
-                          .withOpacity(overlayColor.opacity * value),
+                      color: color.withOpacity(color.opacity * value),
                     ),
                   ),
                 );
@@ -694,7 +673,7 @@ class _FlashState<T> extends State<Flash<T>> {
             )
           else
             SafeArea(
-              child: Align(alignment: widget.alignment, child: child),
+              child: Align(alignment: widget.alignment!, child: child),
             ),
         ],
       ),
@@ -706,7 +685,6 @@ class _FlashState<T> extends State<Flash<T>> {
   /// the transition controlled by the animation controller created by
   /// [FlashController.createAnimationController].
   Animation<Offset> _createAnimation() {
-    assert(animationController != null);
     Animatable<Offset> animatable;
     if (widget.position == FlashPosition.top) {
       animatable =
@@ -730,7 +708,7 @@ class _FlashState<T> extends State<Flash<T>> {
     if (_dismissUnderway) return;
     _isDragging = true;
     _isHorizontalDragging = true;
-    final double delta = details.primaryDelta;
+    final double delta = details.primaryDelta!;
     final double oldDragExtent = _dragExtent;
     switch (horizontalDismissDirection) {
       case HorizontalDismissDirection.horizontal:
@@ -756,6 +734,9 @@ class _FlashState<T> extends State<Flash<T>> {
             break;
         }
         break;
+      default:
+        throw ArgumentError(
+            'Direction $horizontalDismissDirection not supported');
     }
     if (oldDragExtent.sign != _dragExtent.sign) {
       setState(() => _updateMoveAnimation());
@@ -828,6 +809,9 @@ class _FlashState<T> extends State<Flash<T>> {
             break;
         }
         break;
+      default:
+        throw ArgumentError(
+            'Direction $horizontalDismissDirection not supported');
     }
     return kind;
   }
@@ -837,9 +821,9 @@ class _FlashState<T> extends State<Flash<T>> {
     if (_dismissUnderway) return;
     _isDragging = true;
     if (widget.position == FlashPosition.top) {
-      animationController.value += details.primaryDelta / _childHeight;
+      animationController.value += details.primaryDelta! / _childHeight;
     } else {
-      animationController.value -= details.primaryDelta / _childHeight;
+      animationController.value -= details.primaryDelta! / _childHeight;
     }
   }
 
@@ -928,10 +912,10 @@ enum _FlingGestureKind { none, forward, reverse }
 
 class FlashBar extends StatefulWidget {
   FlashBar({
-    Key key,
+    Key? key,
     this.padding = const EdgeInsets.all(16),
     this.title,
-    @required this.message,
+    required this.message,
     this.icon,
     this.shouldIconPulse = true,
     this.leftBarIndicatorColor,
@@ -941,15 +925,13 @@ class FlashBar extends StatefulWidget {
     this.progressIndicatorController,
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
-  })  : assert(message != null),
-        assert(showProgressIndicator != null),
-        super(key: key);
+  }) : super(key: key);
 
   /// The (optional) title of the flashbar is displayed in a large font at the top
   /// of the flashbar.
   ///
   /// Typically a [Text] widget.
-  final Widget title;
+  final Widget? title;
 
   /// The message of the flashbar is displayed in the center of the flashbar in
   /// a lighter font.
@@ -959,17 +941,17 @@ class FlashBar extends StatefulWidget {
 
   /// If not null, shows a left vertical bar to better indicate the humor of the notification.
   /// It is not possible to use it with a [Form] and I do not recommend using it with [LinearProgressIndicator]
-  final Color leftBarIndicatorColor;
+  final Color? leftBarIndicatorColor;
 
   /// You can use any widget here, but I recommend [Icon] or [Image] as indication of what kind
   /// of message you are displaying. Other widgets may break the layout
-  final Widget icon;
+  final Widget? icon;
 
   /// An option to animate the icon (if present). Defaults to true.
   final bool shouldIconPulse;
 
   /// A widget if you need an action from the user.
-  final Widget primaryAction;
+  final Widget? primaryAction;
 
   /// The (optional) set of actions that are displayed at the bottom of the flashbar.
   ///
@@ -977,19 +959,19 @@ class FlashBar extends StatefulWidget {
   ///
   /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
   /// of padding on each side.
-  final List<Widget> actions;
+  final List<Widget>? actions;
 
   /// True if you want to show a [LinearProgressIndicator].
   final bool showProgressIndicator;
 
   /// An optional [AnimationController] when you want to control the progress of your [LinearProgressIndicator].
-  final AnimationController progressIndicatorController;
+  final AnimationController? progressIndicatorController;
 
   /// A [LinearProgressIndicator] configuration parameter.
-  final Color progressIndicatorBackgroundColor;
+  final Color? progressIndicatorBackgroundColor;
 
   /// A [LinearProgressIndicator] configuration parameter.
-  final Animation<Color> progressIndicatorValueColor;
+  final Animation<Color>? progressIndicatorValueColor;
 
   /// Adds a custom padding to Flashbar
   ///
@@ -1002,18 +984,18 @@ class FlashBar extends StatefulWidget {
 
 class _FlashBarState extends State<FlashBar>
     with SingleTickerProviderStateMixin {
-  AnimationController _fadeController;
-  Animation<double> _fadeAnimation;
+  AnimationController? _fadeController;
+  Animation<double>? _fadeAnimation;
 
   final double _initialOpacity = 1.0;
   final double _finalOpacity = 0.4;
 
   final Duration _pulseAnimationDuration = Duration(seconds: 1);
 
-  bool _isTitlePresent;
-  bool _isActionsPresent;
-  double _messageTopMargin;
-  double _messageBottomMargin;
+  late bool _isTitlePresent;
+  late bool _isActionsPresent;
+  late double _messageTopMargin;
+  late double _messageBottomMargin;
 
   @override
   void initState() {
@@ -1028,7 +1010,7 @@ class _FlashBarState extends State<FlashBar>
 
     if (widget.icon != null && widget.shouldIconPulse) {
       _configurePulseAnimation();
-      _fadeController?.forward();
+      _fadeController!.forward();
     }
   }
 
@@ -1036,7 +1018,7 @@ class _FlashBarState extends State<FlashBar>
     if (widget.showProgressIndicator &&
         widget.progressIndicatorController != null) {
       _progressAnimation = CurvedAnimation(
-          curve: Curves.linear, parent: widget.progressIndicatorController);
+          curve: Curves.linear, parent: widget.progressIndicatorController!);
     }
   }
 
@@ -1045,21 +1027,21 @@ class _FlashBarState extends State<FlashBar>
         AnimationController(vsync: this, duration: _pulseAnimationDuration);
     _fadeAnimation = Tween(begin: _initialOpacity, end: _finalOpacity).animate(
       CurvedAnimation(
-        parent: _fadeController,
+        parent: _fadeController!,
         curve: Curves.linear,
       ),
     );
 
-    _fadeController.addStatusListener((status) {
+    _fadeController!.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
-        _fadeController.reverse();
+        _fadeController!.reverse();
       }
       if (status == AnimationStatus.dismissed) {
-        _fadeController.forward();
+        _fadeController!.forward();
       }
     });
 
-    _fadeController.forward();
+    _fadeController!.forward();
   }
 
   @override
@@ -1079,7 +1061,7 @@ class _FlashBarState extends State<FlashBar>
         if (widget.showProgressIndicator)
           LinearProgressIndicator(
             value: widget.progressIndicatorController != null
-                ? _progressAnimation.value
+                ? _progressAnimation!.value
                 : null,
             backgroundColor: widget.progressIndicatorBackgroundColor,
             valueColor: widget.progressIndicatorValueColor,
@@ -1094,7 +1076,7 @@ class _FlashBarState extends State<FlashBar>
     );
   }
 
-  CurvedAnimation _progressAnimation;
+  CurvedAnimation? _progressAnimation;
 
   List<Widget> _getAppropriateRowLayout() {
     double buttonRightPadding;
@@ -1142,7 +1124,7 @@ class _FlashBarState extends State<FlashBar>
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
-                    children: widget.actions,
+                    children: widget.actions!,
                   ),
                 ),
             ],
@@ -1196,7 +1178,7 @@ class _FlashBarState extends State<FlashBar>
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
-                    children: widget.actions,
+                    children: widget.actions!,
                   ),
                 ),
             ],
@@ -1250,7 +1232,7 @@ class _FlashBarState extends State<FlashBar>
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
-                    children: widget.actions,
+                    children: widget.actions!,
                   ),
                 ),
             ],
@@ -1310,7 +1292,7 @@ class _FlashBarState extends State<FlashBar>
                 ButtonTheme(
                   padding: EdgeInsets.symmetric(horizontal: buttonRightPadding),
                   child: ButtonBar(
-                    children: widget.actions,
+                    children: widget.actions!,
                   ),
                 ),
             ],
@@ -1325,16 +1307,16 @@ class _FlashBarState extends State<FlashBar>
     Widget child;
     if (widget.icon is Icon && widget.shouldIconPulse) {
       child = FadeTransition(
-        opacity: _fadeAnimation,
+        opacity: _fadeAnimation!,
         child: widget.icon,
       );
     } else {
-      child = widget.icon;
+      child = widget.icon!;
     }
     var theme = Theme.of(context);
     var buttonTheme = ButtonTheme.of(context);
     return IconTheme(
-      data: theme.iconTheme.copyWith(color: buttonTheme.colorScheme.primary),
+      data: theme.iconTheme.copyWith(color: buttonTheme.colorScheme?.primary),
       child: child,
     );
   }
@@ -1359,8 +1341,8 @@ class _FlashBarState extends State<FlashBar>
       child: IconTheme(
         data: Theme.of(context)
             .iconTheme
-            .copyWith(color: buttonTheme.colorScheme.primary),
-        child: widget.primaryAction,
+            .copyWith(color: buttonTheme.colorScheme?.primary),
+        child: widget.primaryAction!,
       ),
     );
   }

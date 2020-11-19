@@ -14,7 +14,7 @@ description: A new Flutter project.
 version: 1.0.0+1
 
 environment:
-  sdk: ">=2.4.0 <3.0.0"
+  sdk: ">=2.12.0-0 <3.0.0"
 
 dependencies:
   flutter:
@@ -23,8 +23,8 @@ dependencies:
   flash:
     path: ../
 
-  back_button_interceptor: ^4.2.3
-  device_preview: ^0.4.4
+#  back_button_interceptor: ^4.4.0
+#  device_preview: ^0.5.4
 
 dev_dependencies:
   flutter_test:
