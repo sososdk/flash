@@ -88,7 +88,7 @@ class FlashController<T> {
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    var rootOverlay = Navigator.of(context)?.overlay;
+    var rootOverlay = Navigator.of(context).overlay;
     if (persistent) {
       overlay = rootOverlay;
     } else {

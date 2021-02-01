@@ -79,7 +79,7 @@ class _HomePageState extends State<HomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context)?.push(MaterialPageRoute(builder: (context) {
+          Navigator.of(context).push(MaterialPageRoute(builder: (context) {
             return Overlay(
               initialEntries: [
                 OverlayEntry(builder: (context) {
@@ -334,7 +334,7 @@ class _FlashPageState extends State<FlashPage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => Navigator.of(context)
-            ?.push(MaterialPageRoute(builder: (context) => NextPage())),
+            .push(MaterialPageRoute(builder: (context) => NextPage())),
         child: Icon(Icons.navigate_next),
       ),
     );
