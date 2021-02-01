@@ -609,6 +609,7 @@ class _FlashState<T> extends State<Flash<T>> {
 
     child = DecoratedBox(
       decoration: BoxDecoration(
+        borderRadius: widget.borderRadius,
         boxShadow: widget.boxShadows,
       ),
       child: child,

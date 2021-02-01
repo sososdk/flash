@@ -103,7 +103,7 @@ class _FlashPageState extends State<FlashPage> {
     super.dispose();
   }
 
-  bool onBackPressed(bool stopDefaultButtonEvent) {
+  bool onBackPressed(bool stopDefaultButtonEvent, RouteInfo info) {
     // Handle android back event here. WillPopScope is not recommended.
     return false;
   }

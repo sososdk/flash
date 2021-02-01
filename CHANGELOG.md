@@ -1,3 +1,7 @@
+## [1.3.2] - 2021-2-1
+
+- fix: #15 .
+
 ## [1.3.1] - 2020-4-25
 
 - Add `FlashController.isDisposed` .
