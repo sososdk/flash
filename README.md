@@ -31,13 +31,12 @@ It has been written **100% in Dart**. ❤️
 
 # Getting started
 
-In the `pubspec.yaml` of your flutter project, add the following
-dependency:
+In the `pubspec.yaml` of your flutter project, add the following dependency:
 
 ```yaml
 dependencies:
   ...
-  flash: "^1.2.0"
+  flash: ^1.3.2
 ```
 
 In your library add the following import:
