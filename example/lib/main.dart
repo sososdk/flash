@@ -320,7 +320,7 @@ class _FlashPageState extends State<FlashPage> {
                                 message:
                                     'You can put any message of any length here.')
                             .then((value) {
-                          if (value != null) _showMessage(value);
+                          _showMessage(value);
                         });
                       },
                       child: Text('Input Dialog'),
