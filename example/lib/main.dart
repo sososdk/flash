@@ -138,11 +138,11 @@ class _FlashPageState extends State<FlashPage> {
                         content: Text(
                             '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.'),
                         actions: <Widget>[
-                          FlatButton(
+                          TextButton(
                             onPressed: () => Navigator.pop(context),
                             child: Text('YES'),
                           ),
-                          FlatButton(
+                          TextButton(
                             onPressed: () => Navigator.pop(context),
                             child: Text('NO'),
                           ),
@@ -176,42 +176,42 @@ class _FlashPageState extends State<FlashPage> {
                         Text('FlashBar'),
                       ],
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showBasicsFlash(),
                       child: Text('Basics'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () =>
                           _showBasicsFlash(duration: Duration(seconds: 2)),
                       child: Text('Basics | Duration'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () =>
                           _showBasicsFlash(flashStyle: FlashStyle.grounded),
                       child: Text('Basics | Grounded'),
                     ),
                     Row(children: <Widget>[]),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showTopFlash(),
                       child: Text('Top'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () =>
                           _showTopFlash(style: FlashStyle.grounded),
                       child: Text('Top | Grounded'),
                     ),
                     Row(children: <Widget>[]),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showBottomFlash(),
                       child: Text('Bottom'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showBottomFlash(
                           margin: const EdgeInsets.only(
                               left: 12.0, right: 12.0, bottom: 34.0)),
                       child: Text('Bottom | Margin'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showBottomFlash(persistent: false),
                       child: Text('Bottom | No Persistent'),
                     ),
@@ -220,11 +220,11 @@ class _FlashPageState extends State<FlashPage> {
                         Text('Flash Input'),
                       ],
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showInputFlash(),
                       child: Text('Input'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showInputFlash(
                         persistent: false,
                         onWillPop: () => Future.value(true),
@@ -236,18 +236,18 @@ class _FlashPageState extends State<FlashPage> {
                         Text('Flash Toast'),
                       ],
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showCenterFlash(
                           position: FlashPosition.top,
                           style: FlashStyle.floating),
                       child: Text('Top'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () =>
                           _showCenterFlash(alignment: Alignment.center),
                       child: Text('Center'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showCenterFlash(
                           position: FlashPosition.bottom,
                           style: FlashStyle.floating),
@@ -258,42 +258,42 @@ class _FlashPageState extends State<FlashPage> {
                         Text('Flash Helper'),
                       ],
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => FlashHelper.toast(
                           'You can put any message of any length here.'),
                       child: Text('Toast'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => FlashHelper.successBar(context,
                           message: 'I succeeded!'),
                       child: Text('Success Bar'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => FlashHelper.infoBar(context,
                           message: 'Place information here!'),
                       child: Text('Information Bar'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => FlashHelper.errorBar(context,
                           message: 'Place error here!'),
                       child: Text('Error Bar'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => FlashHelper.actionBar(context,
                           message: 'Place error here!',
                           primaryAction: (context, controller, setState) {
-                        return FlatButton(
+                        return TextButton(
                           child: Text('Done'),
                           onPressed: () => controller.dismiss(),
                         );
                       }),
                       child: Text('Action Bar'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () => _showDialogFlash(),
                       child: Text('Simple Dialog'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () {
                         var completer = Completer();
                         Future.delayed(Duration(seconds: 5))
@@ -305,14 +305,14 @@ class _FlashPageState extends State<FlashPage> {
                       },
                       child: Text('Block Dialog'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () {
                         Future.delayed(
                             Duration(seconds: 2), () => _showDialogFlash());
                       },
                       child: Text('Simple Dialog Delay'),
                     ),
-                    RaisedButton(
+                    ElevatedButton(
                       onPressed: () {
                         FlashHelper.inputDialog(context,
                                 persistent: false,
@@ -320,7 +320,7 @@ class _FlashPageState extends State<FlashPage> {
                                 message:
                                     'You can put any message of any length here.')
                             .then((value) {
-                          _showMessage(value);
+                          if (value != null) _showMessage(value);
                         });
                       },
                       child: Text('Input Dialog'),
@@ -381,7 +381,7 @@ class _FlashPageState extends State<FlashPage> {
             title: Text('Title'),
             message: Text('Hello world!'),
             showProgressIndicator: true,
-            primaryAction: FlatButton(
+            primaryAction: TextButton(
               onPressed: () => controller.dismiss(),
               child: Text('DISMISS', style: TextStyle(color: Colors.amber)),
             ),
@@ -418,15 +418,15 @@ class _FlashPageState extends State<FlashPage> {
               message: Text('You can put any message of any length here.'),
               leftBarIndicatorColor: Colors.red,
               icon: Icon(Icons.info_outline),
-              primaryAction: FlatButton(
+              primaryAction: TextButton(
                 onPressed: () => controller.dismiss(),
                 child: Text('DISMISS'),
               ),
               actions: <Widget>[
-                FlatButton(
+                TextButton(
                     onPressed: () => controller.dismiss('Yes, I do!'),
                     child: Text('YES')),
-                FlatButton(
+                TextButton(
                     onPressed: () => controller.dismiss('No, I do not!'),
                     child: Text('NO')),
               ],
@@ -533,13 +533,13 @@ class _FlashPageState extends State<FlashPage> {
       message:
           '⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.',
       negativeAction: (context, controller, setState) {
-        return FlatButton(
+        return TextButton(
           child: Text('NO'),
           onPressed: () => controller.dismiss(),
         );
       },
       positiveAction: (context, controller, setState) {
-        return FlatButton(
+        return TextButton(
           child: Text('YES'),
           onPressed: () => controller.dismiss(),
         );

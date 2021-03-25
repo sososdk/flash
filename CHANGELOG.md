@@ -1,3 +1,6 @@
+## [1.5.1] - 2021-3-25
+- Fix return value to nullable.
+
 ## [1.5.0] - 2021-3-9
 - Stable null-safety release
 

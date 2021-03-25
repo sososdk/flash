@@ -12,7 +12,7 @@ const double _kDismissThreshold = 0.5;
 typedef FlashBuilder<T> = Widget Function(
     BuildContext context, FlashController<T> controller);
 
-Future<T> showFlash<T>({
+Future<T?> showFlash<T>({
   required BuildContext context,
   required FlashBuilder<T> builder,
   Duration? duration,
@@ -106,13 +106,13 @@ class FlashController<T> {
   /// A future that completes when this flash is popped.
   ///
   /// The future completes with the value given to [dismiss], if any.
-  Future<T> get popped => _transitionCompleter.future;
-  final Completer<T> _transitionCompleter = Completer<T>();
+  Future<T?> get popped => _transitionCompleter.future;
+  final _transitionCompleter = Completer<T?>();
 
   late List<OverlayEntry> _overlayEntries;
   T? _result;
 
-  Future<T> show() {
+  Future<T?> show() {
     assert(!_transitionCompleter.isCompleted,
         'Cannot show a $runtimeType after disposing it.');
 
@@ -956,7 +956,7 @@ class FlashBar extends StatefulWidget {
 
   /// The (optional) set of actions that are displayed at the bottom of the flashbar.
   ///
-  /// Typically this is a list of [FlatButton] widgets.
+  /// Typically this is a list of [TextButton] widgets.
   ///
   /// These widgets will be wrapped in a [ButtonBar], which introduces 8 pixels
   /// of padding on each side.

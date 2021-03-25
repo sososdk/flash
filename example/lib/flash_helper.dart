@@ -27,12 +27,12 @@ class FlashHelper {
     _messageQueue.clear();
 
     if (_buildCompleter.isCompleted == false) {
-      _buildCompleter.completeError('NotInitalize');
+      _buildCompleter.completeError('NotInitialize');
     }
     _buildCompleter = Completer<BuildContext>();
   }
 
-  static Future<T> toast<T>(String message) async {
+  static Future<T?> toast<T>(String message) async {
     var context = await _buildCompleter.future;
 
     // Wait previous toast dismissed.
@@ -44,7 +44,7 @@ class FlashHelper {
 
     _previousCompleter = Completer();
 
-    Future<T> showToast(String message) {
+    Future<T?> showToast(String message) {
       return showFlash<T>(
         context: context,
         builder: (context, controller) {
@@ -98,7 +98,7 @@ class FlashHelper {
         TextStyle(fontSize: 15.0, fontWeight: FontWeight.w400);
   }
 
-  static Future<T> infoBar<T>(
+  static Future<T?> infoBar<T>(
     BuildContext context, {
     String? title,
     required String message,
@@ -125,7 +125,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> successBar<T>(
+  static Future<T?> successBar<T>(
     BuildContext context, {
     String? title,
     required String message,
@@ -152,7 +152,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> errorBar<T>(
+  static Future<T?> errorBar<T>(
     BuildContext context, {
     String? title,
     required String message,
@@ -184,7 +184,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> actionBar<T>(
+  static Future<T?> actionBar<T>(
     BuildContext context, {
     String? title,
     required String message,
@@ -214,7 +214,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> simpleDialog<T>(
+  static Future<T?> simpleDialog<T>(
     BuildContext context, {
     String? title,
     required String message,
@@ -253,7 +253,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> customDialog<T>(
+  static Future<T?> customDialog<T>(
     BuildContext context, {
     ChildBuilder<T>? titleBuilder,
     required ChildBuilder messageBuilder,
@@ -296,7 +296,7 @@ class FlashHelper {
     );
   }
 
-  static Future<T> blockDialog<T>(
+  static Future<T?> blockDialog<T>(
     BuildContext context, {
     required Completer<T> dismissCompleter,
   }) {
@@ -322,7 +322,7 @@ class FlashHelper {
     return controller.show();
   }
 
-  static Future<String> inputDialog(
+  static Future<String?> inputDialog(
     BuildContext context, {
     String? title,
     String? message,
