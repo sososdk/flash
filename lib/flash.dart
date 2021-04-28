@@ -15,6 +15,7 @@ typedef FlashBuilder<T> = Widget Function(
 Future<T?> showFlash<T>({
   required BuildContext context,
   required FlashBuilder<T> builder,
+  bool rootNavigator = false,
   Duration? duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool persistent = true,
@@ -23,6 +24,7 @@ Future<T?> showFlash<T>({
   return FlashController<T>(
     context,
     builder,
+    rootNavigator: rootNavigator,
     duration: duration,
     transitionDuration: transitionDuration,
     persistent: persistent,
@@ -83,18 +85,20 @@ class FlashController<T> {
   FlashController(
     this.context,
     this.builder, {
+    bool rootNavigator = false,
     this.duration,
     this.transitionDuration = const Duration(milliseconds: 500),
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    var rootOverlay = Navigator.of(context).overlay;
+    final rootOverlay =
+        Navigator.of(context, rootNavigator: rootNavigator).overlay;
     if (persistent) {
       overlay = rootOverlay;
     } else {
       overlay = Overlay.of(context);
       assert(overlay != rootOverlay,
-          'overlay can\'t be the root overlay when persistent is false');
+          '''overlay can't be the root overlay when persistent is false''');
     }
     assert(overlay != null);
     _controller = createAnimationController()
@@ -628,8 +632,8 @@ class _FlashState<T> extends State<Flash<T>> {
       );
     }
 
-    var overlayBlur = widget.barrierBlur;
-    var overlayColor = widget.barrierColor;
+    final overlayBlur = widget.barrierBlur;
+    final overlayColor = widget.barrierColor;
     child = Semantics(
       focused: false,
       scopesRoute: true,
@@ -1314,8 +1318,8 @@ class _FlashBarState extends State<FlashBar>
     } else {
       child = widget.icon!;
     }
-    var theme = Theme.of(context);
-    var buttonTheme = ButtonTheme.of(context);
+    final theme = Theme.of(context);
+    final buttonTheme = ButtonTheme.of(context);
     return IconTheme(
       data: theme.iconTheme.copyWith(color: buttonTheme.colorScheme?.primary),
       child: child,
@@ -1336,7 +1340,7 @@ class _FlashBarState extends State<FlashBar>
 
   Widget _getPrimaryAction() {
     assert(widget.primaryAction != null);
-    var buttonTheme = ButtonTheme.of(context);
+    final buttonTheme = ButtonTheme.of(context);
     return ButtonTheme(
       textTheme: ButtonTextTheme.primary,
       child: IconTheme(

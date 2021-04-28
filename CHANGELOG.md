@@ -1,3 +1,6 @@
+## [1.5.2] - 2021-4-28
+- Add optional params rootNavigator.
+
 ## [1.5.1] - 2021-3-25
 - Fix return value to nullable.
 
