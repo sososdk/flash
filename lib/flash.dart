@@ -15,7 +15,6 @@ typedef FlashBuilder<T> = Widget Function(
 Future<T?> showFlash<T>({
   required BuildContext context,
   required FlashBuilder<T> builder,
-  bool rootNavigator = false,
   Duration? duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool persistent = true,
@@ -24,7 +23,6 @@ Future<T?> showFlash<T>({
   return FlashController<T>(
     context,
     builder,
-    rootNavigator: rootNavigator,
     duration: duration,
     transitionDuration: transitionDuration,
     persistent: persistent,
@@ -85,14 +83,12 @@ class FlashController<T> {
   FlashController(
     this.context,
     this.builder, {
-    bool rootNavigator = false,
     this.duration,
     this.transitionDuration = const Duration(milliseconds: 500),
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    final rootOverlay =
-        Navigator.of(context, rootNavigator: rootNavigator).overlay;
+    final rootOverlay = Overlay.of(context, rootOverlay: true);
     if (persistent) {
       overlay = rootOverlay;
     } else {
