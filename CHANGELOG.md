@@ -1,3 +1,7 @@
+## [1.5.2+2] - 2021-5-13
+- Remove optional params rootNavigator.
+- Change the method of finding root overlay.
+
 ## [1.5.2+1] - 2021-4-28
 - Remove optional params rootNavigator.
 - Change the method of finding root overlay.

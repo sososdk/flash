@@ -88,7 +88,7 @@ class FlashController<T> {
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    final rootOverlay = Overlay.of(context, rootOverlay: true);
+    final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
     if (persistent) {
       overlay = rootOverlay;
     } else {
@@ -567,7 +567,7 @@ class _FlashState<T> extends State<Flash<T>> {
       child: child,
     );
 
-    if (widget.alignment == null) {
+    if (widget.position == FlashPosition.top) {
       child = AnnotatedRegion<SystemUiOverlayStyle>(
         value:
             _isDark() ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
