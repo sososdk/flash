@@ -1,3 +1,8 @@
+## [2.0.0] - 2021-5-17
+- Restructure.
+- Add context shortcuts.
+- Add theme configuration.
+
 ## [1.5.2+2] - 2021-5-13
 - fix: #22 #23.
 
