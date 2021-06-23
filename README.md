@@ -22,7 +22,6 @@ It has been written **100% in Dart**. ❤️
 * [Getting started](#getting-started)
 * [Sample Project](#sample-project)
 * [Usage](#usage)
-* [Roadmap](#roadmap)
 * [Contribution](#contribution)
 * [License](#license)
 
@@ -36,7 +35,7 @@ In the `pubspec.yaml` of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  flash: ^2.0.0
+  flash: ^2.0.1
 ```
 
 In your library add the following import:
