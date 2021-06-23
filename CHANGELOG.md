@@ -1,3 +1,6 @@
+## [2.0.1] - 2021-6-23
+- Add optional params useSafeArea.
+
 ## [2.0.0] - 2021-5-17
 - Restructure.
 - Add context shortcuts.

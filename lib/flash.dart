@@ -283,6 +283,7 @@ class Flash<T> extends StatefulWidget {
     this.barrierBlur,
     this.barrierColor,
     this.barrierDismissible = true,
+    this.useSafeArea = true,
   })  : assert(() {
           if (alignment == null)
             return behavior != null && position != null;
@@ -315,6 +316,7 @@ class Flash<T> extends StatefulWidget {
     this.barrierBlur,
     this.barrierColor,
     this.barrierDismissible = true,
+    this.useSafeArea = true,
   })  : alignment = null,
         assert(behavior != null),
         assert(position != null),
@@ -341,6 +343,7 @@ class Flash<T> extends StatefulWidget {
     this.barrierBlur,
     this.barrierColor = Colors.black54,
     this.barrierDismissible = true,
+    this.useSafeArea = true,
   })  : enableVerticalDrag = false,
         horizontalDismissDirection = null,
         behavior = null,
@@ -447,6 +450,10 @@ class Flash<T> extends StatefulWidget {
   ///  * [barrierColor], which controls the color of the scrim for this flashbar.
   final bool barrierDismissible;
 
+  /// Is used to indicate if the flashbar should only display in 'safe' areas of
+  /// the screen not used by the operating system (see [SafeArea] for more details).
+  final bool useSafeArea;
+
   @override
   State createState() => _FlashState<T>();
 }
@@ -536,7 +543,7 @@ class _FlashState<T> extends State<Flash<T>> {
       );
     }
 
-    if (widget.behavior == FlashBehavior.fixed) {
+    if (widget.behavior == FlashBehavior.fixed && widget.useSafeArea) {
       child = SafeArea(
         bottom: widget.position == FlashPosition.bottom,
         top: widget.position == FlashPosition.top,
@@ -601,7 +608,7 @@ class _FlashState<T> extends State<Flash<T>> {
       child: child,
     );
 
-    if (widget.behavior == FlashBehavior.floating) {
+    if (widget.behavior == FlashBehavior.floating && widget.useSafeArea) {
       child = SafeArea(
         bottom: widget.position == FlashPosition.bottom,
         top: widget.position == FlashPosition.top,
@@ -677,10 +684,10 @@ class _FlashState<T> extends State<Flash<T>> {
                   : Alignment.topCenter,
               child: child,
             )
+          else if (widget.useSafeArea)
+            SafeArea(child: Align(alignment: widget.alignment!, child: child))
           else
-            SafeArea(
-              child: Align(alignment: widget.alignment!, child: child),
-            ),
+            Align(alignment: widget.alignment!, child: child)
         ],
       ),
     );
