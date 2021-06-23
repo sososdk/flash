@@ -24,8 +24,8 @@ dependencies:
   flash:
     path: ../
 
-  back_button_interceptor: ^5.0.0
-  device_preview: ^0.7.1
+  back_button_interceptor: ^5.0.1
+  device_preview: ^0.7.3
 
 dev_dependencies:
   flutter_test:
