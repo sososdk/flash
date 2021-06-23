@@ -63,6 +63,7 @@ class FlashController<T> {
   ///       }),
   ///     ],
   ///   );
+  /// }
   /// ```
   final bool persistent;
 
