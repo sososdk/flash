@@ -1,3 +1,6 @@
+## [2.0.2] - 2021-9-22
+- Add optional params for `Toast`.
+
 ## [2.0.1] - 2021-6-23
 - Add optional params useSafeArea.
 

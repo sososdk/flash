@@ -54,12 +54,23 @@ class Toast extends StatefulWidget {
   /// Emit a message for the specified duration.
   static Future<T?> show<T>(
     BuildContext context,
-    String message, {
+    Object message, {
     Duration duration = const Duration(seconds: 3),
+    Alignment? alignment,
+    EdgeInsets? margin,
+    BorderRadius? borderRadius,
+    Color? backgroundColor,
+    TextStyle? textStyle,
+    EdgeInsets? padding,
   }) {
-    return context
-        .findAncestorStateOfType<_ToastState>()!
-        .show(message, duration: duration);
+    return context.findAncestorStateOfType<_ToastState>()!.show(message,
+        duration: duration,
+        alignment: alignment,
+        margin: margin,
+        borderRadius: borderRadius,
+        backgroundColor: backgroundColor,
+        textStyle: textStyle,
+        padding: padding);
   }
 
   @override
@@ -84,8 +95,14 @@ class _ToastState extends State<Toast> {
   }
 
   Future<T?> show<T>(
-    String message, {
+    Object message, {
     Duration duration = const Duration(seconds: 3),
+    Alignment? alignment,
+    EdgeInsets? margin,
+    BorderRadius? borderRadius,
+    Color? backgroundColor,
+    TextStyle? textStyle,
+    EdgeInsets? padding,
   }) async {
     // Wait initialized.
     await initialized.future;
@@ -94,28 +111,38 @@ class _ToastState extends State<Toast> {
 
     // Wait previous toast dismissed.
     if (messageCompleter?.isCompleted == false) {
-      final item = _MessageItem<T>(message, duration);
+      final item = _MessageItem<T>(message, duration, alignment, margin,
+          borderRadius, backgroundColor, textStyle, padding);
       messageQueue.add(item);
       return await item.completer.future;
     }
 
     messageCompleter = Completer();
 
-    Future<T?> showToast(String message, Duration duration) {
+    Future<T?> showToast(Object message, Duration duration, alignment, margin,
+        borderRadius, backgroundColor, textStyle, padding) {
       return showFlash<T>(
         context: context,
         builder: (context, controller) {
+          final child;
+          if (message is WidgetBuilder) {
+            child = message(context);
+          } else if (message is Widget) {
+            child = message;
+          } else {
+            child = Text(message.toString());
+          }
           return Flash<T>(
             controller: controller,
-            alignment: widget.alignment,
-            margin: widget.margin,
-            borderRadius: widget.borderRadius,
-            backgroundColor: Colors.black87,
+            alignment: alignment ?? widget.alignment,
+            margin: margin ?? widget.margin,
+            borderRadius: borderRadius ?? widget.borderRadius,
+            backgroundColor: backgroundColor ?? Colors.black87,
             child: Padding(
-              padding: widget.padding,
+              padding: padding ?? widget.padding,
               child: DefaultTextStyle(
-                style: widget.textStyle,
-                child: Text(message),
+                style: textStyle ?? widget.textStyle,
+                child: child,
               ),
             ),
           );
@@ -124,33 +151,64 @@ class _ToastState extends State<Toast> {
       ).whenComplete(() {
         if (messageQueue.isNotEmpty) {
           final item = messageQueue.removeFirst();
-          item.completer.complete(showToast(item.message, item.duration));
+          item.completer.complete(showToast(
+              item.message,
+              item.duration,
+              item.alignment,
+              item.margin,
+              item.borderRadius,
+              item.backgroundColor,
+              item.textStyle,
+              item.padding));
         } else {
           messageCompleter?.complete();
         }
       });
     }
 
-    return showToast(message, duration);
+    return showToast(message, duration, alignment, margin, borderRadius,
+        backgroundColor, textStyle, padding);
   }
 }
 
 class _MessageItem<T> {
-  final String message;
+  final Object message;
   final Duration duration;
+  final Alignment? alignment;
+  final EdgeInsets? margin;
+  final BorderRadius? borderRadius;
+  final Color? backgroundColor;
+  final TextStyle? textStyle;
+  final EdgeInsets? padding;
   final Completer<T?> completer;
 
-  _MessageItem(this.message, this.duration) : completer = Completer<T?>();
+  _MessageItem(this.message, this.duration, this.alignment, this.margin,
+      this.borderRadius, this.backgroundColor, this.textStyle, this.padding)
+      : completer = Completer<T?>();
 }
 
 /// Context extension for flash toast.
 extension ToastShortcuts on BuildContext {
   /// Emit a message for the specified duration.
   Future<T?> showToast<T>(
-    String message, {
+    Object message, {
     Duration duration = const Duration(seconds: 3),
+    Alignment? alignment,
+    EdgeInsets? margin,
+    BorderRadius? borderRadius,
+    Color? backgroundColor,
+    TextStyle? textStyle,
+    EdgeInsets? padding,
   }) {
-    return Toast.show(this, message, duration: duration);
+    assert(message is String || message is Widget || message is WidgetBuilder);
+    return Toast.show(this, message,
+        duration: duration,
+        alignment: alignment,
+        margin: margin,
+        borderRadius: borderRadius,
+        backgroundColor: backgroundColor,
+        textStyle: textStyle,
+        padding: padding);
   }
 }
 
