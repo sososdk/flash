@@ -226,7 +226,7 @@ class FlashController<T> {
     _cancelTimer();
   }
 
-  void dismiss([T? result]) {
+  Future<void> dismiss([T? result]) {
     assert(!_transitionCompleter.isCompleted,
         'Cannot reuse a $runtimeType after disposing it.');
     _dismissed = true;
@@ -234,7 +234,7 @@ class FlashController<T> {
     if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
     _removeLocalHistory();
     _cancelTimer();
-    _controller.reverse();
+    return _controller.reverse();
   }
 
   @protected

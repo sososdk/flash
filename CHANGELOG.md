@@ -1,3 +1,6 @@
+## [2.0.3] - 2021-9-30
+- Add return `Future` for `Flash.dismiss`.
+
 ## [2.0.2] - 2021-9-22
 - Add optional params for `Toast`.
 
