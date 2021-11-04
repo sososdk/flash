@@ -318,7 +318,7 @@ class _FlashPageState extends State<FlashPage> {
     showFlash(
       context: context,
       duration: const Duration(seconds: 2),
-      persistent: false,
+      persistent: true,
       builder: (_, controller) {
         return Flash(
           controller: controller,
