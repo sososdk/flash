@@ -905,8 +905,8 @@ class FlashBarThemeData {
   const FlashBarThemeData.light()
       : this(
           brightness: Brightness.light,
-          infoColor: const Color(0xFF81C784),
-          successColor: const Color(0xFF64B5F6),
+          infoColor: const Color(0xFF64B5F6),
+          successColor: const Color(0xFF81C784),
           errorColor: const Color(0xFFE57373),
         );
 
@@ -914,8 +914,8 @@ class FlashBarThemeData {
   const FlashBarThemeData.dark()
       : this(
           brightness: Brightness.dark,
-          infoColor: const Color(0xFF66BB6A),
-          successColor: const Color(0xFF42A5F5),
+          infoColor: const Color(0xFF42A5F5),
+          successColor: const Color(0xFF66BB6A),
           errorColor: const Color(0xFFEF5350),
         );
 
