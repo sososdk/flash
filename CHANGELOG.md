@@ -1,3 +1,6 @@
+## [2.0.3+1] - 2021-12-13
+- Add return `Future` for `Flash.dismiss`.
+
 ## [2.0.3] - 2021-9-30
 - Add return `Future` for `Flash.dismiss`.
 
