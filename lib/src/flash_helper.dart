@@ -3,7 +3,6 @@ import 'dart:collection';
 
 import 'package:flash/flash.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 /// Wrap a widget with [Overlay].
 Widget wrapWithOverlay({
@@ -219,7 +218,7 @@ extension FlashBarShortcuts on BuildContext {
     FlashBarType? barType,
     bool persistent = true,
     Duration? duration,
-    Duration transitionDuration = const Duration(milliseconds: 500),
+    Duration? transitionDuration,
     WillPopCallback? onWillPop,
     bool? enableVerticalDrag,
     HorizontalDismissDirection? horizontalDismissDirection,
@@ -247,6 +246,7 @@ extension FlashBarShortcuts on BuildContext {
     EdgeInsets? padding,
     Widget? title,
     required Widget content,
+    BoxConstraints? constraints,
     bool shouldIconPulse = true,
     Widget? icon,
     Color? indicatorColor,
@@ -259,23 +259,23 @@ extension FlashBarShortcuts on BuildContext {
     Animation<Color>? progressIndicatorValueColor,
     Completer<T>? dismissCompleter,
   }) {
+    final flashTheme = FlashTheme.bar(this);
     final controller = FlashController<T>(
       this,
       persistent: persistent,
       duration: duration,
-      transitionDuration: transitionDuration,
+      transitionDuration: transitionDuration ?? flashTheme.transitionDuration,
       onWillPop: onWillPop,
       builder: (context, controller) {
         return StatefulBuilder(builder: (context, setState) {
           final theme = Theme.of(context);
           final colorScheme = theme.colorScheme;
-          final flashBarTheme = FlashTheme.bar(context);
           final isThemeDark = theme.brightness == Brightness.dark;
           final $brightness = brightness ??
-              flashBarTheme.brightness ??
+              flashTheme.brightness ??
               (isThemeDark ? Brightness.light : Brightness.dark);
           final $backgroundColor = backgroundColor ??
-              flashBarTheme.backgroundColor ??
+              flashTheme.backgroundColor ??
               (isThemeDark
                   ? theme.colorScheme.onSurface
                   : Color.alphaBlend(
@@ -283,13 +283,13 @@ extension FlashBarShortcuts on BuildContext {
                       theme.colorScheme.surface,
                     ));
           final $titleColor = titleStyle?.color ??
-              flashBarTheme.titleStyle?.color ??
+              flashTheme.titleStyle?.color ??
               theme.colorScheme.surface;
           final $contentColor = contentStyle?.color ??
-              flashBarTheme.contentStyle?.color ??
+              flashTheme.contentStyle?.color ??
               theme.colorScheme.surface;
           final $actionColor = actionColor ??
-              flashBarTheme.actionColor ??
+              flashTheme.actionColor ??
               (isThemeDark
                   ? theme.colorScheme.primaryVariant
                   : theme.colorScheme.secondary);
@@ -318,11 +318,11 @@ extension FlashBarShortcuts on BuildContext {
 
           Color? $indicatorColor;
           if (barType == FlashBarType.info) {
-            $indicatorColor = flashBarTheme.infoColor;
+            $indicatorColor = flashTheme.infoColor;
           } else if (barType == FlashBarType.success) {
-            $indicatorColor = flashBarTheme.successColor;
+            $indicatorColor = flashTheme.successColor;
           } else if (barType == FlashBarType.error) {
-            $indicatorColor = flashBarTheme.errorColor;
+            $indicatorColor = flashTheme.errorColor;
           } else {
             $indicatorColor = indicatorColor;
           }
@@ -345,48 +345,44 @@ extension FlashBarShortcuts on BuildContext {
             data: inverseTheme,
             child: Flash<T>.bar(
               controller: controller,
-              behavior:
-                  behavior ?? flashBarTheme.behavior ?? FlashBehavior.fixed,
-              position:
-                  position ?? flashBarTheme.position ?? FlashPosition.bottom,
-              enableVerticalDrag: enableVerticalDrag ??
-                  flashBarTheme.enableVerticalDrag ??
-                  true,
+              behavior: behavior ?? flashTheme.behavior ?? FlashBehavior.fixed,
+              position: position ?? flashTheme.position ?? FlashPosition.bottom,
+              enableVerticalDrag:
+                  enableVerticalDrag ?? flashTheme.enableVerticalDrag ?? true,
               horizontalDismissDirection: horizontalDismissDirection ??
-                  flashBarTheme.horizontalDismissDirection,
+                  flashTheme.horizontalDismissDirection,
               brightness: $brightness,
               backgroundColor: $backgroundColor,
               backgroundGradient:
-                  backgroundGradient ?? flashBarTheme.backgroundGradient,
-              boxShadows: boxShadows ?? flashBarTheme.boxShadows,
-              barrierBlur: barrierBlur ?? flashBarTheme.barrierBlur,
-              barrierColor: barrierColor ?? flashBarTheme.barrierColor,
-              barrierDismissible: barrierDismissible ??
-                  flashBarTheme.barrierDismissible ??
-                  true,
-              borderRadius: borderRadius ?? flashBarTheme.borderRadius,
-              borderColor: borderColor ?? flashBarTheme.borderColor,
-              borderWidth: borderWidth ?? flashBarTheme.borderWidth,
-              margin: margin ?? flashBarTheme.margin ?? EdgeInsets.zero,
+                  backgroundGradient ?? flashTheme.backgroundGradient,
+              boxShadows: boxShadows ?? flashTheme.boxShadows,
+              barrierBlur: barrierBlur ?? flashTheme.barrierBlur,
+              barrierColor: barrierColor ?? flashTheme.barrierColor,
+              barrierDismissible:
+                  barrierDismissible ?? flashTheme.barrierDismissible ?? true,
+              borderRadius: borderRadius ?? flashTheme.borderRadius,
+              borderColor: borderColor ?? flashTheme.borderColor,
+              borderWidth: borderWidth ?? flashTheme.borderWidth,
+              margin: margin ?? flashTheme.margin ?? EdgeInsets.zero,
               insetAnimationDuration: insetAnimationDuration ??
-                  flashBarTheme.insetAnimationDuration ??
+                  flashTheme.insetAnimationDuration ??
                   const Duration(milliseconds: 100),
               insetAnimationCurve: insetAnimationCurve ??
-                  flashBarTheme.insetAnimationCurve ??
+                  flashTheme.insetAnimationCurve ??
                   Curves.fastOutSlowIn,
               forwardAnimationCurve: forwardAnimationCurve ??
-                  flashBarTheme.forwardAnimationCurve ??
+                  flashTheme.forwardAnimationCurve ??
                   Curves.fastOutSlowIn,
               reverseAnimationCurve: reverseAnimationCurve ??
-                  flashBarTheme.reverseAnimationCurve ??
+                  flashTheme.reverseAnimationCurve ??
                   Curves.fastOutSlowIn,
               onTap: onTap == null
                   ? null
                   : () => onTap(context, controller, setState),
+              constraints: constraints ?? flashTheme.constraints,
               child: FlashBar(
-                padding: padding ??
-                    flashBarTheme.padding ??
-                    const EdgeInsets.all(16.0),
+                padding:
+                    padding ?? flashTheme.padding ?? const EdgeInsets.all(16.0),
                 title: title == null
                     ? null
                     : DefaultTextStyle(
@@ -485,7 +481,7 @@ extension FlashDialogShortcuts on BuildContext {
   /// Show a custom flash dialog.
   Future<T?> showFlashDialog<T>({
     bool persistent = true,
-    Duration transitionDuration = const Duration(milliseconds: 500),
+    Duration? transitionDuration,
     WillPopCallback? onWillPop,
     Brightness? brightness,
     Color? backgroundColor,
@@ -509,36 +505,37 @@ extension FlashDialogShortcuts on BuildContext {
     EdgeInsets? padding,
     Widget? title,
     required Widget content,
+    BoxConstraints? constraints,
     FlashWidgetBuilder<T>? negativeActionBuilder,
     FlashWidgetBuilder<T>? positiveActionBuilder,
     Completer<T>? dismissCompleter,
   }) {
+    final flashTheme = FlashTheme.dialog(this);
     final controller = FlashController<T>(
       this,
       persistent: persistent,
-      transitionDuration: transitionDuration,
+      transitionDuration: transitionDuration ?? flashTheme.transitionDuration,
       onWillPop: onWillPop,
       builder: (context, controller) {
         return StatefulBuilder(builder: (context, setState) {
           final theme = Theme.of(context);
-          final flashDialogTheme = FlashTheme.dialog(context);
           final dialogTheme = DialogTheme.of(context);
           final $brightness =
-              brightness ?? flashDialogTheme.brightness ?? theme.brightness;
+              brightness ?? flashTheme.brightness ?? theme.brightness;
           final $backgroundColor = backgroundColor ??
-              flashDialogTheme.backgroundColor ??
+              flashTheme.backgroundColor ??
               dialogTheme.backgroundColor ??
               theme.dialogBackgroundColor;
           final $titleStyle = titleStyle ??
-              flashDialogTheme.titleStyle ??
+              flashTheme.titleStyle ??
               dialogTheme.titleTextStyle ??
               theme.textTheme.headline6!;
           final $contentStyle = contentStyle ??
-              flashDialogTheme.contentStyle ??
+              flashTheme.contentStyle ??
               dialogTheme.contentTextStyle ??
               theme.textTheme.subtitle1!;
           final $actionColor = actionColor ??
-              flashDialogTheme.actionColor ??
+              flashTheme.actionColor ??
               theme.colorScheme.primary;
           Widget wrapActionBuilder(FlashWidgetBuilder<T> builder) {
             Widget child = IconTheme(
@@ -559,39 +556,38 @@ extension FlashDialogShortcuts on BuildContext {
             brightness: $brightness,
             backgroundColor: $backgroundColor,
             backgroundGradient:
-                backgroundGradient ?? flashDialogTheme.backgroundGradient,
-            boxShadows: boxShadows ?? flashDialogTheme.boxShadows,
-            barrierBlur: barrierBlur ?? flashDialogTheme.barrierBlur,
+                backgroundGradient ?? flashTheme.backgroundGradient,
+            boxShadows: boxShadows ?? flashTheme.boxShadows,
+            barrierBlur: barrierBlur ?? flashTheme.barrierBlur,
             barrierColor:
-                barrierColor ?? flashDialogTheme.barrierColor ?? Colors.black54,
-            barrierDismissible: barrierDismissible ??
-                flashDialogTheme.barrierDismissible ??
-                true,
-            borderRadius: borderRadius ?? flashDialogTheme.borderRadius,
-            borderColor: borderColor ?? flashDialogTheme.borderColor,
-            borderWidth: borderWidth ?? flashDialogTheme.borderWidth,
+                barrierColor ?? flashTheme.barrierColor ?? Colors.black54,
+            barrierDismissible:
+                barrierDismissible ?? flashTheme.barrierDismissible ?? true,
+            borderRadius: borderRadius ?? flashTheme.borderRadius,
+            borderColor: borderColor ?? flashTheme.borderColor,
+            borderWidth: borderWidth ?? flashTheme.borderWidth,
             margin: margin ??
-                flashDialogTheme.margin ??
+                flashTheme.margin ??
                 const EdgeInsets.symmetric(horizontal: 40.0),
             insetAnimationDuration: insetAnimationDuration ??
-                flashDialogTheme.insetAnimationDuration ??
+                flashTheme.insetAnimationDuration ??
                 const Duration(milliseconds: 100),
             insetAnimationCurve: insetAnimationCurve ??
-                flashDialogTheme.insetAnimationCurve ??
+                flashTheme.insetAnimationCurve ??
                 Curves.fastOutSlowIn,
             forwardAnimationCurve: forwardAnimationCurve ??
-                flashDialogTheme.forwardAnimationCurve ??
+                flashTheme.forwardAnimationCurve ??
                 Curves.fastOutSlowIn,
             reverseAnimationCurve: reverseAnimationCurve ??
-                flashDialogTheme.reverseAnimationCurve ??
+                flashTheme.reverseAnimationCurve ??
                 Curves.fastOutSlowIn,
             onTap: onTap == null
                 ? null
                 : () => onTap(context, controller, setState),
+            constraints: constraints ?? flashTheme.constraints,
             child: FlashBar(
-              padding: padding ??
-                  flashDialogTheme.padding ??
-                  const EdgeInsets.all(16.0),
+              padding:
+                  padding ?? flashTheme.padding ?? const EdgeInsets.all(16.0),
               title: title == null
                   ? null
                   : DefaultTextStyle(style: $titleStyle, child: title),
@@ -614,7 +610,7 @@ extension FlashDialogShortcuts on BuildContext {
   /// Display a block dialog.
   Future<T?> showBlockDialog<T>({
     bool persistent = true,
-    Duration transitionDuration = const Duration(milliseconds: 500),
+    Duration? transitionDuration,
     Color? backgroundColor,
     Gradient? backgroundGradient,
     List<BoxShadow>? boxShadows,
@@ -636,47 +632,47 @@ extension FlashDialogShortcuts on BuildContext {
     ),
     required Completer<T>? dismissCompleter,
   }) {
+    final flashTheme = FlashTheme.blockDialog(this);
     final controller = FlashController<T>(
       this,
       persistent: persistent,
-      transitionDuration: transitionDuration,
+      transitionDuration: transitionDuration ?? flashTheme.transitionDuration,
       onWillPop: () => Future.value(false),
       builder: (context, controller) {
         return StatefulBuilder(builder: (context, setState) {
           final theme = Theme.of(context);
-          final blockDialog = FlashTheme.blockDialog(context);
           final dialogTheme = DialogTheme.of(context);
           final $backgroundColor = backgroundColor ??
-              blockDialog.backgroundColor ??
+              flashTheme.backgroundColor ??
               dialogTheme.backgroundColor ??
               theme.dialogBackgroundColor;
           return Flash<T>.dialog(
             controller: controller,
             backgroundColor: $backgroundColor,
             backgroundGradient:
-                backgroundGradient ?? blockDialog.backgroundGradient,
-            boxShadows: boxShadows ?? blockDialog.boxShadows,
-            barrierBlur: barrierBlur ?? blockDialog.barrierBlur,
+                backgroundGradient ?? flashTheme.backgroundGradient,
+            boxShadows: boxShadows ?? flashTheme.boxShadows,
+            barrierBlur: barrierBlur ?? flashTheme.barrierBlur,
             barrierColor:
-                barrierColor ?? blockDialog.barrierColor ?? Colors.black54,
+                barrierColor ?? flashTheme.barrierColor ?? Colors.black54,
             barrierDismissible: false,
-            borderRadius: borderRadius ?? blockDialog.borderRadius,
-            borderColor: borderColor ?? blockDialog.borderColor,
-            borderWidth: borderWidth ?? blockDialog.borderWidth,
+            borderRadius: borderRadius ?? flashTheme.borderRadius,
+            borderColor: borderColor ?? flashTheme.borderColor,
+            borderWidth: borderWidth ?? flashTheme.borderWidth,
             margin: margin ??
-                blockDialog.margin ??
+                flashTheme.margin ??
                 const EdgeInsets.symmetric(horizontal: 40.0),
             insetAnimationDuration: insetAnimationDuration ??
-                blockDialog.insetAnimationDuration ??
+                flashTheme.insetAnimationDuration ??
                 const Duration(milliseconds: 100),
             insetAnimationCurve: insetAnimationCurve ??
-                blockDialog.insetAnimationCurve ??
+                flashTheme.insetAnimationCurve ??
                 Curves.fastOutSlowIn,
             forwardAnimationCurve: forwardAnimationCurve ??
-                blockDialog.forwardAnimationCurve ??
+                flashTheme.forwardAnimationCurve ??
                 Curves.fastOutSlowIn,
             reverseAnimationCurve: reverseAnimationCurve ??
-                blockDialog.reverseAnimationCurve ??
+                flashTheme.reverseAnimationCurve ??
                 Curves.fastOutSlowIn,
             onTap: onTap == null
                 ? null
@@ -769,6 +765,9 @@ class FlashTheme extends InheritedWidget {
 /// Defines the configuration of the overall visual [FlashTheme] bar.
 @immutable
 class FlashBarThemeData {
+  /// Default value for [FlashController.transitionDuration].
+  final Duration? transitionDuration;
+
   /// Default value for [Flash.behavior].
   ///
   /// If null, [Flash] will default to [FlashBehavior.fixed].
@@ -823,6 +822,9 @@ class FlashBarThemeData {
   /// Default value for [Flash.borderWidth].
   final double? borderWidth;
 
+  /// Default value for [Flash.constraints].
+  final BoxConstraints? constraints;
+
   /// Default value for [Flash.margin].
   ///
   /// If null, [Flash] will default to [EdgeInsets.zero].
@@ -873,6 +875,7 @@ class FlashBarThemeData {
 
   /// Creates a flash bar theme that can be used for [Flash] bar.
   const FlashBarThemeData({
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.behavior,
     this.position,
     this.enableVerticalDrag,
@@ -887,6 +890,7 @@ class FlashBarThemeData {
     this.borderRadius,
     this.borderColor,
     this.borderWidth,
+    this.constraints,
     this.margin,
     this.insetAnimationDuration,
     this.insetAnimationCurve,
@@ -924,6 +928,7 @@ class FlashBarThemeData {
       identical(this, other) ||
       other is FlashBarThemeData &&
           runtimeType == other.runtimeType &&
+          transitionDuration == other.transitionDuration &&
           behavior == other.behavior &&
           position == other.position &&
           enableVerticalDrag == other.enableVerticalDrag &&
@@ -938,6 +943,7 @@ class FlashBarThemeData {
           borderRadius == other.borderRadius &&
           borderColor == other.borderColor &&
           borderWidth == other.borderWidth &&
+          constraints == other.constraints &&
           margin == other.margin &&
           insetAnimationDuration == other.insetAnimationDuration &&
           insetAnimationCurve == other.insetAnimationCurve &&
@@ -953,6 +959,7 @@ class FlashBarThemeData {
 
   @override
   int get hashCode =>
+      transitionDuration.hashCode ^
       behavior.hashCode ^
       position.hashCode ^
       enableVerticalDrag.hashCode ^
@@ -967,6 +974,7 @@ class FlashBarThemeData {
       borderRadius.hashCode ^
       borderColor.hashCode ^
       borderWidth.hashCode ^
+      constraints.hashCode ^
       margin.hashCode ^
       insetAnimationDuration.hashCode ^
       insetAnimationCurve.hashCode ^
@@ -984,6 +992,9 @@ class FlashBarThemeData {
 /// Defines the configuration of the overall visual [FlashTheme] dialog.
 @immutable
 class FlashDialogThemeData {
+  /// Default value for [FlashController.transitionDuration].
+  final Duration? transitionDuration;
+
   /// Default value for [Flash.brightness].
   ///
   /// If null, [Flash] will default to [ThemeData.brightness].
@@ -1020,6 +1031,9 @@ class FlashDialogThemeData {
 
   /// Default value for [Flash.borderWidth].
   final double? borderWidth;
+
+  /// Default value for [Flash.constraints].
+  final BoxConstraints? constraints;
 
   /// Default value for [Flash.margin].
   final EdgeInsets? margin;
@@ -1058,6 +1072,7 @@ class FlashDialogThemeData {
 
   /// Creates a flash dialog theme that can be used for [Flash] dialog.
   const FlashDialogThemeData({
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.brightness,
     this.backgroundColor,
     this.backgroundGradient,
@@ -1068,6 +1083,7 @@ class FlashDialogThemeData {
     this.borderRadius = const BorderRadius.all(Radius.circular(8.0)),
     this.borderColor,
     this.borderWidth,
+    this.constraints,
     this.margin,
     this.insetAnimationDuration,
     this.reverseAnimationCurve,
@@ -1084,6 +1100,7 @@ class FlashDialogThemeData {
       identical(this, other) ||
       other is FlashDialogThemeData &&
           runtimeType == other.runtimeType &&
+          transitionDuration == other.transitionDuration &&
           brightness == other.brightness &&
           backgroundColor == other.backgroundColor &&
           backgroundGradient == other.backgroundGradient &&
@@ -1094,6 +1111,7 @@ class FlashDialogThemeData {
           borderRadius == other.borderRadius &&
           borderColor == other.borderColor &&
           borderWidth == other.borderWidth &&
+          constraints == other.constraints &&
           margin == other.margin &&
           insetAnimationDuration == other.insetAnimationDuration &&
           insetAnimationCurve == other.insetAnimationCurve &&
@@ -1106,6 +1124,7 @@ class FlashDialogThemeData {
 
   @override
   int get hashCode =>
+      transitionDuration.hashCode ^
       brightness.hashCode ^
       backgroundColor.hashCode ^
       backgroundGradient.hashCode ^
@@ -1116,6 +1135,7 @@ class FlashDialogThemeData {
       borderRadius.hashCode ^
       borderColor.hashCode ^
       borderWidth.hashCode ^
+      constraints.hashCode ^
       margin.hashCode ^
       insetAnimationDuration.hashCode ^
       insetAnimationCurve.hashCode ^
@@ -1130,6 +1150,9 @@ class FlashDialogThemeData {
 /// Defines the configuration of the overall visual [FlashTheme] dialog.
 @immutable
 class FlashBlockDialogThemeData {
+  /// Default value for [FlashController.transitionDuration].
+  final Duration? transitionDuration;
+
   /// Default value for [Flash.brightness].
   ///
   /// If null, [Flash] will default to [ThemeData.brightness].
@@ -1190,6 +1213,7 @@ class FlashBlockDialogThemeData {
 
   /// Creates a flash dialog theme that can be used for [Flash] block dialog.
   const FlashBlockDialogThemeData({
+    this.transitionDuration = const Duration(milliseconds: 500),
     this.brightness,
     this.backgroundColor,
     this.backgroundGradient,
@@ -1206,4 +1230,45 @@ class FlashBlockDialogThemeData {
     this.forwardAnimationCurve,
     this.padding,
   });
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is FlashBlockDialogThemeData &&
+          runtimeType == other.runtimeType &&
+          transitionDuration == other.transitionDuration &&
+          brightness == other.brightness &&
+          backgroundColor == other.backgroundColor &&
+          backgroundGradient == other.backgroundGradient &&
+          boxShadows == other.boxShadows &&
+          barrierBlur == other.barrierBlur &&
+          barrierColor == other.barrierColor &&
+          borderRadius == other.borderRadius &&
+          borderColor == other.borderColor &&
+          borderWidth == other.borderWidth &&
+          margin == other.margin &&
+          insetAnimationDuration == other.insetAnimationDuration &&
+          insetAnimationCurve == other.insetAnimationCurve &&
+          forwardAnimationCurve == other.forwardAnimationCurve &&
+          reverseAnimationCurve == other.reverseAnimationCurve &&
+          padding == other.padding;
+
+  @override
+  int get hashCode =>
+      transitionDuration.hashCode ^
+      brightness.hashCode ^
+      backgroundColor.hashCode ^
+      backgroundGradient.hashCode ^
+      boxShadows.hashCode ^
+      barrierBlur.hashCode ^
+      barrierColor.hashCode ^
+      borderRadius.hashCode ^
+      borderColor.hashCode ^
+      borderWidth.hashCode ^
+      margin.hashCode ^
+      insetAnimationDuration.hashCode ^
+      insetAnimationCurve.hashCode ^
+      forwardAnimationCurve.hashCode ^
+      reverseAnimationCurve.hashCode ^
+      padding.hashCode;
 }

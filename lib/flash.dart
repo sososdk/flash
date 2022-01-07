@@ -262,6 +262,7 @@ class Flash<T> extends StatefulWidget {
     Key? key,
     required this.controller,
     required this.child,
+    this.constraints,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -296,6 +297,7 @@ class Flash<T> extends StatefulWidget {
     Key? key,
     required this.controller,
     required this.child,
+    this.constraints,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -326,6 +328,7 @@ class Flash<T> extends StatefulWidget {
     Key? key,
     required this.controller,
     required this.child,
+    this.constraints,
     this.margin = EdgeInsets.zero,
     this.borderRadius,
     this.borderColor,
@@ -358,6 +361,9 @@ class Flash<T> extends StatefulWidget {
   ///
   /// {@macro flutter.widgets.child}
   final Widget child;
+
+  /// Additional constraints to apply to the child.
+  final BoxConstraints? constraints;
 
   /// The brightness of the [backgroundColor] or [backgroundGradient]
   final Brightness brightness;
@@ -576,6 +582,13 @@ class _FlashState<T> extends State<Flash<T>> {
       type: MaterialType.transparency,
       child: child,
     );
+
+    if (widget.constraints != null) {
+      child = ConstrainedBox(
+        constraints: widget.constraints!,
+        child: child,
+      );
+    }
 
     // https://github.com/sososdk/flash/issues/23
     if (widget.position == FlashPosition.top) {

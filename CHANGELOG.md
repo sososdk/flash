@@ -1,3 +1,7 @@
+## [2.0.3+2] - 2022-1-7
+- Add `constraints` optional params for `Flash`.
+- Add `transitionDuration` and `constraints` configuration.
+
 ## [2.0.3+1] - 2021-12-13
 - Add return `Future` for `Flash.dismiss`.
 

@@ -443,6 +443,7 @@ class _FlashPageState extends State<FlashPage> {
 
   void _showDialogFlash({bool persistent = true}) {
     context.showFlashDialog(
+        constraints: BoxConstraints(maxWidth: 300),
         persistent: persistent,
         title: Text('Flash Dialog'),
         content: Text(
