@@ -91,13 +91,20 @@ class FlashController<T> {
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
     if (persistent) {
-      overlay = rootOverlay;
+      overlay = Navigator.of(context, rootNavigator: true).overlay;
     } else {
       overlay = Overlay.of(context);
-      assert(overlay != rootOverlay,
-          '''overlay can't be the root overlay when persistent is false''');
+
+      try {
+        final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
+
+        assert(overlay != rootOverlay,
+            '''overlay can't be the root overlay when persistent is false''');
+      } catch (e) {
+        // silencing the error
+        // in case we do not have root navigator the overlays could not be the same
+      }
     }
     assert(overlay != null);
     _controller = createAnimationController()
