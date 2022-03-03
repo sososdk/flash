@@ -91,8 +91,9 @@ class FlashController<T> {
     this.persistent = true,
     this.onWillPop,
   }) : route = ModalRoute.of(context) {
-    final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
-    if (persistent) {
+    final rootOverlay =
+        Navigator.maybeOf(context, rootNavigator: true)?.overlay;
+    if (persistent && rootOverlay != null) {
       overlay = rootOverlay;
     } else {
       overlay = Overlay.of(context);
