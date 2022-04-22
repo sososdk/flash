@@ -279,6 +279,7 @@ class Flash<T> extends StatefulWidget {
     this.alignment,
     this.position,
     this.behavior,
+    this.animationDirection,
     this.forwardAnimationCurve = Curves.fastOutSlowIn,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
     this.barrierBlur,
@@ -313,6 +314,7 @@ class Flash<T> extends StatefulWidget {
     this.insetAnimationCurve = Curves.fastOutSlowIn,
     this.position = FlashPosition.bottom,
     this.behavior = FlashBehavior.floating,
+    this.animationDirection = AnimationDirection.fromCenter,
     this.forwardAnimationCurve = Curves.fastOutSlowIn,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
     this.barrierBlur,
@@ -350,6 +352,7 @@ class Flash<T> extends StatefulWidget {
   })  : enableVerticalDrag = false,
         horizontalDismissDirection = null,
         behavior = null,
+        animationDirection = null,
         position = null,
         assert(alignment != null),
         assert(barrierColor != null),
@@ -425,6 +428,9 @@ class Flash<T> extends StatefulWidget {
   /// Flash can be floating or be grounded to the edge of the screen.
   /// If [behavior] is grounded, I do not recommend using [margin] or [borderRadius].
   final FlashBehavior? behavior;
+
+  /// Flash can start animation from the center, left or right edge of the screen.
+  final AnimationDirection? animationDirection;
 
   /// The [Curve] animation used when show() is called. [Curves.fastOutSlowIn] is default.
   final Curve forwardAnimationCurve;
@@ -713,11 +719,21 @@ class _FlashState<T> extends State<Flash<T>> {
   Animation<Offset> _createAnimation() {
     Animatable<Offset> animatable;
     if (widget.position == FlashPosition.top) {
-      animatable =
-          Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
+      var bdx = const Offset(0.0, -1.0);
+      if (widget.animationDirection == AnimationDirection.FromLeft) {
+        bdx = const Offset(-1.0, 0.0);
+      } else if (widget.animationDirection == AnimationDirection.fromRight) {
+        bdx = const Offset(1.0, 0.0);
+      }
+      animatable = Tween<Offset>(begin: bdx, end: Offset.zero);
     } else if (widget.position == FlashPosition.bottom) {
-      animatable =
-          Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
+      var bdx = const Offset(0.0, 1.0);
+      if (widget.animationDirection == AnimationDirection.FromLeft) {
+        bdx = const Offset(-1.0, 0.0);
+      } else if (widget.animationDirection == AnimationDirection.fromRight) {
+        bdx = const Offset(1.0, 0.0);
+      }
+      animatable = Tween<Offset>(begin: bdx, end: Offset.zero);
     } else {
       animatable =
           Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero);
@@ -919,6 +935,9 @@ enum FlashPosition { top, bottom }
 
 /// Indicates if flash will be attached to the edge of the screen or not.
 enum FlashBehavior { floating, fixed }
+
+/// Indicates if animation will start from center, left or right from screen edge.
+enum AnimationDirection { fromCenter, FromLeft, fromRight }
 
 /// The direction in which a [HorizontalDismissDirection] can be dismissed.
 enum HorizontalDismissDirection {

@@ -193,6 +193,18 @@ class _FlashPageState extends State<FlashPage> {
                         child: Text('Top'),
                       ),
                       ElevatedButton(
+                        onPressed: () => _showTopFlash(
+                          animationDirection: AnimationDirection.FromLeft,
+                        ),
+                        child: Text('Top from Left'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _showTopFlash(
+                          animationDirection: AnimationDirection.fromRight,
+                        ),
+                        child: Text('Top from Right'),
+                      ),
+                      ElevatedButton(
                         onPressed: () =>
                             _showTopFlash(style: FlashBehavior.fixed),
                         child: Text('Top | Grounded'),
@@ -201,6 +213,18 @@ class _FlashPageState extends State<FlashPage> {
                       ElevatedButton(
                         onPressed: () => _showBottomFlash(),
                         child: Text('Bottom'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _showBottomFlash(
+                          animationDirection: AnimationDirection.FromLeft,
+                        ),
+                        child: Text('Bottom from Left'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => _showBottomFlash(
+                          animationDirection: AnimationDirection.fromRight,
+                        ),
+                        child: Text('Bottom from Right'),
                       ),
                       ElevatedButton(
                         onPressed: () => _showBottomFlash(
@@ -314,7 +338,10 @@ class _FlashPageState extends State<FlashPage> {
     );
   }
 
-  void _showTopFlash({FlashBehavior style = FlashBehavior.floating}) {
+  void _showTopFlash({
+    FlashBehavior style = FlashBehavior.floating,
+    AnimationDirection animationDirection = AnimationDirection.fromCenter,
+  }) {
     showFlash(
       context: context,
       duration: const Duration(seconds: 2),
@@ -330,6 +357,7 @@ class _FlashPageState extends State<FlashPage> {
           barrierDismissible: true,
           behavior: style,
           position: FlashPosition.top,
+          animationDirection: animationDirection,
           child: FlashBar(
             title: Text('Title'),
             content: Text('Hello world!'),
@@ -347,6 +375,7 @@ class _FlashPageState extends State<FlashPage> {
   void _showBottomFlash({
     bool persistent = true,
     EdgeInsets margin = EdgeInsets.zero,
+    AnimationDirection animationDirection = AnimationDirection.fromCenter,
   }) {
     showFlash(
       context: context,
@@ -357,6 +386,7 @@ class _FlashPageState extends State<FlashPage> {
           margin: margin,
           behavior: FlashBehavior.fixed,
           position: FlashPosition.bottom,
+          animationDirection: animationDirection,
           borderRadius: BorderRadius.circular(8.0),
           borderColor: Colors.blue,
           boxShadows: kElevationToShadow[8],

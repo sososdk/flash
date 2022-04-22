@@ -1,3 +1,6 @@
+## [2.0.4] - 2022-22-4
+- Add `animationDirection` optional params for `Flash` to change animation behavior.
+
 ## [2.0.3+2] - 2022-1-7
 - Add `constraints` optional params for `Flash`.
 - Add `transitionDuration` and `constraints` configuration.
