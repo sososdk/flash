@@ -1,3 +1,6 @@
+## [2.0.3+3] - 2022-7-19
+- Fix #49
+
 ## [2.0.3+2] - 2022-1-7
 - Add `constraints` optional params for `Flash`.
 - Add `transitionDuration` and `constraints` configuration.
