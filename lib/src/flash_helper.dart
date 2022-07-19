@@ -291,15 +291,15 @@ extension FlashBarShortcuts on BuildContext {
           final $actionColor = actionColor ??
               flashTheme.actionColor ??
               (isThemeDark
-                  ? theme.colorScheme.primaryVariant
+                  ? theme.colorScheme.primaryContainer
                   : theme.colorScheme.secondary);
 
           final inverseTheme = theme.copyWith(
             colorScheme: ColorScheme(
               primary: colorScheme.onPrimary,
-              primaryVariant: colorScheme.onPrimary,
+              primaryContainer: colorScheme.onPrimary,
               secondary: $actionColor,
-              secondaryVariant: colorScheme.onSecondary,
+              secondaryContainer: colorScheme.onSecondary,
               surface: colorScheme.onSurface,
               background: $backgroundColor,
               error: colorScheme.onError,
@@ -386,13 +386,15 @@ extension FlashBarShortcuts on BuildContext {
                 title: title == null
                     ? null
                     : DefaultTextStyle(
-                        style: inverseTheme.textTheme.headline6!
-                            .copyWith(color: $titleColor)
+                        style: inverseTheme.textTheme.titleLarge!
+                            .merge(flashTheme.titleStyle)
                             .merge(titleStyle),
                         child: title,
                       ),
                 content: DefaultTextStyle(
-                  style: inverseTheme.textTheme.subtitle1!.merge(contentStyle),
+                  style: inverseTheme.textTheme.titleMedium!
+                      .merge(flashTheme.contentStyle)
+                      .merge(contentStyle),
                   child: content,
                 ),
                 shouldIconPulse: shouldIconPulse,
@@ -529,11 +531,11 @@ extension FlashDialogShortcuts on BuildContext {
           final $titleStyle = titleStyle ??
               flashTheme.titleStyle ??
               dialogTheme.titleTextStyle ??
-              theme.textTheme.headline6!;
+              theme.textTheme.titleLarge!;
           final $contentStyle = contentStyle ??
               flashTheme.contentStyle ??
               dialogTheme.contentTextStyle ??
-              theme.textTheme.subtitle1!;
+              theme.textTheme.titleMedium!;
           final $actionColor = actionColor ??
               flashTheme.actionColor ??
               theme.colorScheme.primary;
