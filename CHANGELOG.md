@@ -1,3 +1,6 @@
+## [2.0.4] - 2022-9-27
+- Add `position` optional param for `FlashBarShortcuts`.
+
 ## [2.0.3+3] - 2022-7-19
 - Fix #49
 

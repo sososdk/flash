@@ -334,7 +334,7 @@ extension FlashBarShortcuts on BuildContext {
             );
             child = TextButtonTheme(
               data: TextButtonThemeData(
-                style: TextButton.styleFrom(primary: $actionColor),
+                style: TextButton.styleFrom(foregroundColor: $actionColor),
               ),
               child: child,
             );
@@ -432,6 +432,7 @@ extension FlashBarShortcuts on BuildContext {
   /// Show an information flash bar.
   Future<T?> showInfoBar<T>({
     required Widget content,
+    FlashPosition? position,
     Duration duration = const Duration(seconds: 3),
     Icon? icon = const Icon(Icons.info_outline),
     FlashWidgetBuilder<T>? primaryActionBuilder,
@@ -439,6 +440,7 @@ extension FlashBarShortcuts on BuildContext {
     return showFlashBar<T>(
       barType: FlashBarType.info,
       content: content,
+      position: position,
       icon: icon,
       duration: duration,
       primaryActionBuilder: primaryActionBuilder,
@@ -448,6 +450,7 @@ extension FlashBarShortcuts on BuildContext {
   /// Show a success flash bar.
   Future<T?> showSuccessBar<T>({
     required Widget content,
+    FlashPosition? position,
     Duration duration = const Duration(seconds: 3),
     Icon? icon = const Icon(Icons.check_circle_outline),
     FlashWidgetBuilder<T>? primaryActionBuilder,
@@ -455,6 +458,7 @@ extension FlashBarShortcuts on BuildContext {
     return showFlashBar<T>(
       barType: FlashBarType.success,
       content: content,
+      position: position,
       icon: icon,
       duration: duration,
       primaryActionBuilder: primaryActionBuilder,
@@ -464,6 +468,7 @@ extension FlashBarShortcuts on BuildContext {
   /// Show a error flash bar.
   Future<T?> showErrorBar<T>({
     required Widget content,
+    FlashPosition? position,
     Duration duration = const Duration(seconds: 3),
     Icon? icon = const Icon(Icons.error_outline),
     FlashWidgetBuilder<T>? primaryActionBuilder,
@@ -471,6 +476,7 @@ extension FlashBarShortcuts on BuildContext {
     return showFlashBar<T>(
       barType: FlashBarType.error,
       content: content,
+      position: position,
       icon: icon,
       duration: duration,
       primaryActionBuilder: primaryActionBuilder,
@@ -546,7 +552,7 @@ extension FlashDialogShortcuts on BuildContext {
             );
             child = TextButtonTheme(
               data: TextButtonThemeData(
-                style: TextButton.styleFrom(primary: $actionColor),
+                style: TextButton.styleFrom(foregroundColor: $actionColor),
               ),
               child: child,
             );
