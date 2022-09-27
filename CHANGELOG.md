@@ -1,3 +1,6 @@
+## [2.0.5] - 2022-9-27
+- Add `copyWith` method for theme data.
+
 ## [2.0.4] - 2022-9-27
 - Add `position` optional param for `FlashBarShortcuts`.
 
