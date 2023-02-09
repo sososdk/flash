@@ -14,14 +14,22 @@ void main() => runApp(
       ),
     );
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   // This widget is the root of your application.
+  @override
+  State<StatefulWidget> createState() {
+    return _AppState();
+  }
+}
+
+class _AppState extends State<App> {
+  final navigatorKey = GlobalKey<NavigatorState>();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       builder: (context, _) {
         var child = _!;
-        final navigatorKey = child.key as GlobalKey<NavigatorState>;
         child = DevicePreview.appBuilder(context, _);
         final theme = Theme.of(context);
         final isThemeDark = theme.brightness == Brightness.dark;
