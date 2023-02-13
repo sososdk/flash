@@ -314,6 +314,7 @@ extension FlashBarShortcuts on BuildContext {
               displayColor: $titleColor,
               bodyColor: $contentColor,
             ),
+            hintColor: $contentColor.withOpacity($contentColor.opacity * 0.6),
           );
 
           Color? $indicatorColor;
@@ -801,7 +802,7 @@ class FlashBarThemeData {
 
   /// Default value for [Flash.backgroundColor].
   ///
-  /// If null, [Flash] will default to inversion of [ThemeData.backgroundColor].
+  /// If null, [Flash] will default to inversion of [ThemeData.colorScheme.background].
   final Color? backgroundColor;
 
   /// Default value for [Flash.backgroundGradient].

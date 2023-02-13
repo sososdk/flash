@@ -510,17 +510,6 @@ class _FlashState<T> extends State<Flash<T>> {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
     _moveAnimation = _animation = _createAnimation();
-    if (hasBarrier) {
-      controller.route?.navigator?.focusScopeNode.setFirstFocus(focusScopeNode);
-    }
-  }
-
-  @override
-  void didUpdateWidget(Flash<T> oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (hasBarrier) {
-      controller.route?.navigator?.focusScopeNode.setFirstFocus(focusScopeNode);
-    }
   }
 
   @override
@@ -532,11 +521,6 @@ class _FlashState<T> extends State<Flash<T>> {
   bool get _dismissUnderway =>
       animationController.status == AnimationStatus.reverse ||
       animationController.status == AnimationStatus.dismissed;
-
-  bool get _shouldIgnoreFocusRequest {
-    return animationController.status == AnimationStatus.reverse ||
-        (controller.route?.navigator?.userGestureInProgress ?? false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -664,9 +648,6 @@ class _FlashState<T> extends State<Flash<T>> {
             AnimatedBuilder(
               animation: animationController,
               builder: (context, child) {
-                final bool ignoreEvents = _shouldIgnoreFocusRequest;
-                focusScopeNode.canRequestFocus = !ignoreEvents;
-
                 final value = animationController.value;
                 final blur = (widget.barrierBlur ?? 0.0) * value;
                 final color = widget.barrierColor ?? Colors.transparent;

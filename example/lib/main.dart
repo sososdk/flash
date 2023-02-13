@@ -421,12 +421,14 @@ class _FlashPageState extends State<FlashPage> {
       forwardAnimationCurve: Curves.fastLinearToSlowEaseIn,
       title: Text('Hello Flash'),
       content: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('You can put any message of any length here.'),
           Form(
             child: TextFormField(
               controller: editingController,
               autofocus: true,
+              decoration: InputDecoration(hintText: 'Please input something.'),
             ),
           ),
         ],
