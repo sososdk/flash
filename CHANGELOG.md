@@ -1,5 +1,8 @@
+## [2.0.6] - 2023-2-13
+- Will pop add the controller param.
+
 ## [2.0.5+1] - 2023-2-13
-- Add `copyWith` method for theme data.
+- Remove some about focusScopeNode.
 
 ## [2.0.5] - 2022-9-27
 - Add `copyWith` method for theme data.

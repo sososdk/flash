@@ -219,7 +219,7 @@ extension FlashBarShortcuts on BuildContext {
     bool persistent = true,
     Duration? duration,
     Duration? transitionDuration,
-    WillPopCallback? onWillPop,
+    FlashWillPopCallback? onWillPop,
     bool? enableVerticalDrag,
     HorizontalDismissDirection? horizontalDismissDirection,
     FlashBehavior? behavior,
@@ -491,7 +491,7 @@ extension FlashDialogShortcuts on BuildContext {
   Future<T?> showFlashDialog<T>({
     bool persistent = true,
     Duration? transitionDuration,
-    WillPopCallback? onWillPop,
+    FlashWillPopCallback? onWillPop,
     Brightness? brightness,
     Color? backgroundColor,
     TextStyle? titleStyle,
@@ -646,7 +646,7 @@ extension FlashDialogShortcuts on BuildContext {
       this,
       persistent: persistent,
       transitionDuration: transitionDuration ?? flashTheme.transitionDuration,
-      onWillPop: () => Future.value(false),
+      onWillPop: (_) => Future.value(false),
       builder: (context, controller) {
         return StatefulBuilder(builder: (context, setState) {
           final theme = Theme.of(context);

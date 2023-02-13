@@ -14,13 +14,16 @@ const double _kDismissThreshold = 0.5;
 typedef FlashBuilder<T> = Widget Function(
     BuildContext context, FlashController<T> controller);
 
+typedef FlashWillPopCallback = Future<bool> Function(
+    FlashController controller);
+
 Future<T?> showFlash<T>({
   required BuildContext context,
   required FlashBuilder<T> builder,
   Duration? duration,
   Duration transitionDuration = const Duration(milliseconds: 500),
   bool persistent = true,
-  WillPopCallback? onWillPop,
+  FlashWillPopCallback? onWillPop,
 }) {
   return FlashController<T>(
     context,
@@ -71,7 +74,7 @@ class FlashController<T> {
   ///
   /// If the callback returns a Future that resolves to false, the enclosing
   /// route will not be popped.
-  final WillPopCallback? onWillPop;
+  late WillPopCallback? onWillPop;
 
   /// The animation controller that the route uses to drive the transitions.
   ///
@@ -89,7 +92,7 @@ class FlashController<T> {
     this.duration,
     this.transitionDuration = const Duration(milliseconds: 500),
     this.persistent = true,
-    this.onWillPop,
+    FlashWillPopCallback? onWillPop,
   }) : route = ModalRoute.of(context) {
     final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
     if (persistent) {
@@ -102,6 +105,8 @@ class FlashController<T> {
     assert(overlay != null);
     _controller = createAnimationController()
       ..addStatusListener(_handleStatusChanged);
+
+    this.onWillPop = onWillPop == null ? null : () => onWillPop(this);
   }
 
   bool get isDisposed => _transitionCompleter.isCompleted;

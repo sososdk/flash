@@ -233,7 +233,7 @@ class _FlashPageState extends State<FlashPage> {
                       ElevatedButton(
                         onPressed: () => _showInputFlash(
                           persistent: false,
-                          onWillPop: () => Future.value(true),
+                          onWillPop: (_) => Future.value(true),
                         ),
                         child: Text('Input | No Persistent | Will Pop'),
                       ),
@@ -408,7 +408,7 @@ class _FlashPageState extends State<FlashPage> {
 
   void _showInputFlash({
     bool persistent = true,
-    WillPopCallback? onWillPop,
+    FlashWillPopCallback? onWillPop,
     Color? barrierColor,
   }) {
     var editingController = TextEditingController();
