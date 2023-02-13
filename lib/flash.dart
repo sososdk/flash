@@ -124,7 +124,6 @@ class FlashController<T> {
     assert(!_transitionCompleter.isCompleted,
         'Cannot show a $runtimeType after disposing it.');
 
-    if (onWillPop != null) route?.addScopedWillPopCallback(onWillPop!);
     overlay!.insertAll(_overlayEntries = _createOverlayEntries());
     _controller.forward();
     _configureTimer();
@@ -167,16 +166,16 @@ class FlashController<T> {
   }
 
   List<OverlayEntry> _createOverlayEntries() {
-    List<OverlayEntry> overlays = [];
-
-    overlays.add(
+    List<OverlayEntry> overlays = [
       OverlayEntry(
-          builder: (BuildContext context) {
-            return builder(context, this);
-          },
-          maintainState: false,
-          opaque: false),
-    );
+        builder: (context) => WillPopScope(
+          onWillPop: onWillPop,
+          child: builder(context, this),
+        ),
+        maintainState: false,
+        opaque: false,
+      ),
+    ];
 
     return overlays;
   }
@@ -188,7 +187,6 @@ class FlashController<T> {
             'Cannot reuse a $runtimeType after disposing it.');
         _removedHistoryEntry = true;
         if (!_dismissed) {
-          if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
           _cancelTimer();
           _controller.reverse();
         }
@@ -226,7 +224,6 @@ class FlashController<T> {
   @protected
   void dismissInternal() {
     _dismissed = true;
-    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
     _removeLocalHistory();
     _cancelTimer();
   }
@@ -236,7 +233,6 @@ class FlashController<T> {
         'Cannot reuse a $runtimeType after disposing it.');
     _dismissed = true;
     _result = result;
-    if (onWillPop != null) route?.removeScopedWillPopCallback(onWillPop!);
     _removeLocalHistory();
     _cancelTimer();
     return _controller.reverse();
