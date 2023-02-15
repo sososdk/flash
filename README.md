@@ -35,7 +35,7 @@ In the `pubspec.yaml` of your flutter project, add the following dependency:
 ```yaml
 dependencies:
   ...
-  flash: ^2.0.6
+  flash: ^3.0.0-dev
 ```
 
 In your library add the following import:
