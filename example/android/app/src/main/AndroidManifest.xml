@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.example">
+    package="com.github.sososdk.flash_example">
    <application
-        android:label="example"
+        android:label="flash_example"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

@@ -24,7 +24,6 @@ dependencies:
   flash:
     path: ../
 
-  back_button_interceptor: ^6.0.1
   device_preview: ^1.1.0
 
 dev_dependencies:

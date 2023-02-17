@@ -1,3 +1,8 @@
+## [3.0.0-dev+1] - 2023-2-17
+- Refactor.
+- Add flash route.
+- Use ThemeExtension.
+
 ## [3.0.0-dev] - 2023-2-15
 
 ## [2.0.6] - 2023-2-13

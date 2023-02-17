@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter/semantics.dart';
 import 'package:flutter/widgets.dart';
 
 typedef FlashBuilder<T> = Widget Function(BuildContext context, FlashController<T> controller);
@@ -21,7 +20,7 @@ Future<T?> showFlash<T>({
   Duration transitionDuration = const Duration(milliseconds: 250),
   Duration reverseTransitionDuration = const Duration(milliseconds: 200),
   Color? barrierColor,
-  ImageFilter? barrierFilter,
+  double? barrierBlur,
   bool barrierDismissible = false,
   Curve barrierCurve = Curves.ease,
   Duration? duration,
@@ -33,7 +32,7 @@ Future<T?> showFlash<T>({
     transitionDuration: transitionDuration,
     reverseTransitionDuration: reverseTransitionDuration,
     barrierColor: barrierColor,
-    barrierFilter: barrierFilter,
+    barrierBlur: barrierBlur,
     barrierDismissible: barrierDismissible,
     barrierCurve: barrierCurve,
     duration: duration,
@@ -48,7 +47,7 @@ class DefaultFlashController<T> implements FlashController<T> {
     this.transitionDuration = const Duration(milliseconds: 250),
     this.reverseTransitionDuration = const Duration(milliseconds: 200),
     this.barrierColor,
-    this.barrierFilter,
+    this.barrierBlur,
     this.barrierDismissible = false,
     this.barrierCurve = Curves.ease,
     this.persistent = true,
@@ -72,7 +71,7 @@ class DefaultFlashController<T> implements FlashController<T> {
 
   final Color? barrierColor;
 
-  final ImageFilter? barrierFilter;
+  final double? barrierBlur;
 
   final bool barrierDismissible;
 
@@ -177,15 +176,21 @@ class DefaultFlashController<T> implements FlashController<T> {
 
   List<OverlayEntry> _createOverlayEntries() {
     return <OverlayEntry>[
+      if (hasBarrier)
+        OverlayEntry(
+          builder: (context) => _buildBarrier(context),
+        ),
       OverlayEntry(
-        builder: (context) => _buildBarrier(context),
-      ),
-      OverlayEntry(
-        builder: (context) => builder(context, this),
+        builder: (context) => _FlashScope(controller: this, child: builder(context, this)),
         maintainState: true,
       ),
     ];
   }
+
+  bool get hasBarrier =>
+      barrierDismissible ||
+      (barrierColor != null && barrierColor!.opacity != 0.0) ||
+      (barrierBlur != null && barrierBlur != 0.0);
 
   Widget _buildBarrier(BuildContext context) {
     Widget barrier;
@@ -215,24 +220,21 @@ class DefaultFlashController<T> implements FlashController<T> {
         cursor: SystemMouseCursors.basic,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: barrierDismissible ? dismiss : null,
+          onTap: dismiss,
           child: barrier,
         ),
       );
     }
-    if (barrierFilter != null) {
-      barrier = BackdropFilter(
-        filter: barrierFilter!,
-        child: barrier,
-      );
-    }
-    barrier = IgnorePointer(
-      ignoring: controller.status == AnimationStatus.reverse || controller.status == AnimationStatus.dismissed,
-      child: barrier,
-    );
-    if (barrierDismissible) {
-      barrier = Semantics(
-        sortKey: const OrdinalSortKey(1.0),
+    if (barrierBlur != null) {
+      barrier = AnimatedBuilder(
+        animation: controller,
+        builder: (context, child) {
+          final blur = (barrierBlur ?? 0.0) * controller.value;
+          return BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+            child: child,
+          );
+        },
         child: barrier,
       );
     }
@@ -298,6 +300,7 @@ class DefaultFlashController<T> implements FlashController<T> {
   @protected
   void dispose() {
     assert(!_transitionCompleter.isCompleted, 'Cannot dispose a $runtimeType twice.');
+    deactivate();
     for (OverlayEntry entry in _overlayEntries) {
       entry.remove();
     }
@@ -313,11 +316,64 @@ class DefaultFlashController<T> implements FlashController<T> {
   String toString() => '$runtimeType(animation: $_controller)';
 }
 
+class _FlashScope extends StatefulWidget {
+  const _FlashScope({Key? key, required this.controller, required this.child}) : super(key: key);
+
+  final DefaultFlashController controller;
+
+  final Widget child;
+
+  @override
+  State<_FlashScope> createState() => __FlashScopeState();
+}
+
+class __FlashScopeState extends State<_FlashScope> {
+  final focusScopeNode = FocusScopeNode(debugLabel: '$__FlashScopeState Focus Scope');
+
+  bool get _shouldIgnoreFocusRequest {
+    return widget.controller.controller.status == AnimationStatus.reverse ||
+        (widget.controller.route?.navigator?.userGestureInProgress ?? false);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.controller.hasBarrier &&
+        (widget.controller.route?.isCurrent ?? false) &&
+        (widget.controller.route?.navigator!.widget.requestFocus ?? false)) {
+      widget.controller.route?.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (widget.controller.hasBarrier &&
+        (widget.controller.route?.isCurrent ?? false) &&
+        (widget.controller.route?.navigator!.widget.requestFocus ?? false)) {
+      widget.controller.route?.navigator!.focusNode.enclosingScope?.setFirstFocus(focusScopeNode);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => FocusScope(
+        node: focusScopeNode,
+        child: AnimatedBuilder(
+            animation: widget.controller.controller,
+            builder: (context, child) {
+              final bool ignoreEvents = _shouldIgnoreFocusRequest;
+              focusScopeNode.canRequestFocus = !ignoreEvents;
+              return child!;
+            },
+            child: widget.child),
+      );
+}
+
 Future<T?> showModalFlash<T>({
   required BuildContext context,
   required FlashBuilder<T> builder,
   Color? barrierColor = const Color(0x8A000000),
-  ImageFilter? barrierFilter,
+  double? barrierBlur,
   bool barrierDismissible = true,
   Curve barrierCurve = Curves.ease,
   String? barrierLabel,
@@ -327,11 +383,11 @@ Future<T?> showModalFlash<T>({
   bool useRootNavigator = false,
   Duration? duration,
 }) {
-  final NavigatorState navigator = Navigator.of(context, rootNavigator: useRootNavigator);
+  final navigator = Navigator.of(context, rootNavigator: useRootNavigator);
   return navigator.push(ModalFlashRoute<T>(
     builder: builder,
     capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
-    barrierFilter: barrierFilter,
+    barrierBlur: barrierBlur,
     barrierColor: barrierColor,
     barrierDismissible: barrierDismissible,
     barrierCurve: barrierCurve,
@@ -348,7 +404,7 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
     required this.builder,
     this.capturedThemes,
     this.barrierColor = const Color(0x8A000000),
-    ImageFilter? barrierFilter,
+    this.barrierBlur,
     this.barrierDismissible = true,
     this.barrierCurve = Curves.ease,
     this.barrierLabel,
@@ -356,7 +412,7 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
     this.reverseTransitionDuration = const Duration(milliseconds: 200),
     RouteSettings? settings,
     this.duration,
-  }) : super(filter: barrierFilter, settings: settings);
+  }) : super(settings: settings);
 
   final FlashBuilder<T> builder;
 
@@ -365,6 +421,8 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
 
   @override
   final Color? barrierColor;
+
+  final double? barrierBlur;
 
   @override
   final bool barrierDismissible;
@@ -418,6 +476,28 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
   }
 
   @override
+  Iterable<OverlayEntry> createOverlayEntries() {
+    return [
+      OverlayEntry(
+        builder: (context) {
+          return AnimatedBuilder(
+            animation: controller,
+            builder: (context, child) {
+              final value = controller.value;
+              final blur = (barrierBlur ?? 0.0) * value;
+              return BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+                child: const SizedBox.expand(),
+              );
+            },
+          );
+        },
+      ),
+      ...super.createOverlayEntries()
+    ];
+  }
+
+  @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
     return capturedThemes?.wrap(builder(context, this)) ?? builder(context, this);
   }
@@ -452,6 +532,7 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
 
   @override
   void dispose() {
+    deactivate();
     controller.removeStatusListener(_handleStatusChanged);
     super.dispose();
   }

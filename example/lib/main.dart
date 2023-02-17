@@ -1,7 +1,5 @@
 import 'dart:async';
-import 'dart:ui';
 
-import 'package:back_button_interceptor/back_button_interceptor.dart';
 import 'package:device_preview/device_preview.dart';
 import 'package:example/clear_focus.dart';
 import 'package:flash/flash.dart';
@@ -34,23 +32,15 @@ class _AppState extends State<App> {
       builder: (context, _) {
         var child = _!;
         child = DevicePreview.appBuilder(context, _);
-        final theme = Theme.of(context);
-        final isThemeDark = theme.brightness == Brightness.dark;
         // Wrap with toast.
         child = Toast(child: child, navigatorKey: navigatorKey);
-        // Wrap with flash theme
-        child = FlashTheme(
-          child: child,
-          flashBarTheme: isThemeDark ? const FlashBarThemeData.dark() : const FlashBarThemeData.light(),
-          flashDialogTheme: const FlashDialogThemeData(),
-        );
         return child;
       },
       locale: DevicePreview.locale(context),
       title: 'Flash Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+      theme: ThemeData.light().copyWith(extensions: [FlashToastTheme(), FlashBarTheme()]),
+      darkTheme: ThemeData.dark(),
+      themeMode: ThemeMode.light,
       home: HomePage(title: 'Flash Demo Home Page'),
     );
   }
@@ -109,23 +99,6 @@ class _FlashPageState extends State<FlashPage> {
   GlobalKey<ScaffoldState> _key = GlobalKey<ScaffoldState>();
 
   @override
-  void initState() {
-    super.initState();
-    BackButtonInterceptor.add(onBackPressed);
-  }
-
-  @override
-  void dispose() {
-    BackButtonInterceptor.remove(onBackPressed);
-    super.dispose();
-  }
-
-  bool onBackPressed(bool stopDefaultButtonEvent, RouteInfo routeInfo) {
-    // Handle android back event here. WillPopScope is not recommended.
-    return false;
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       key: _key,
@@ -177,118 +150,272 @@ class _FlashPageState extends State<FlashPage> {
                     alignment: WrapAlignment.start,
                     runAlignment: WrapAlignment.center,
                     children: <Widget>[
-                      Row(
-                        children: <Widget>[
-                          Text('FlashBar'),
-                        ],
-                      ),
+                      Row(children: <Widget>[Text('Flash Toast')]),
                       ElevatedButton(
-                        onPressed: () => _showBasicsFlash(),
-                        child: Text('Basics'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showBasicsFlash(duration: Duration(seconds: 2)),
-                        child: Text('Basics | Duration'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showBasicsFlash(flashStyle: FlashBehavior.fixed),
-                        child: Text('Basics | Grounded'),
-                      ),
-                      Row(children: <Widget>[]),
-                      ElevatedButton(
-                        onPressed: () => _showTopFlash(),
-                        child: Text('Top'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showTopFlash(style: FlashBehavior.fixed),
-                        child: Text('Top | Grounded'),
-                      ),
-                      Row(children: <Widget>[]),
-                      ElevatedButton(
-                        onPressed: () => _showBottomFlash(),
-                        child: Text('Bottom'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () =>
-                            _showBottomFlash(margin: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 34.0)),
-                        child: Text('Bottom | Margin'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showBottomFlash(persistent: false),
-                        child: Text('Bottom | No Persistent'),
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Text('Flash Input'),
-                        ],
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showInputFlash(barrierColor: Colors.black54),
-                        child: Text('Input'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => _showInputFlash(
-                          persistent: false,
-                        ),
-                        child: Text('Input | No Persistent'),
-                      ),
-                      Row(
-                        children: <Widget>[
-                          Text('Flash Helper'),
-                        ],
-                      ),
-                      ElevatedButton(
-                        onPressed: () => context.showToast('You can put any message of any length here.'),
+                        onPressed: () => context.showToast(Text('message (Queue)')),
                         child: Text('Toast'),
                       ),
                       ElevatedButton(
-                        onPressed: () => context.showSuccessBar(content: Text('I succeeded!')),
-                        child: Text('Success Bar'),
+                        onPressed: () {
+                          context.showToast(
+                            Text('message'),
+                            shape: StadiumBorder(),
+                            queue: false,
+                            alignment: Alignment(0.0, -0.3),
+                          );
+                        },
+                        child: Text('Toast'),
+                      ),
+                      Row(children: <Widget>[Text('Flash Bar')]),
+                      ElevatedButton(
+                        onPressed: () => context.showFlash<bool>(
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            indicatorColor: Colors.red,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                            actions: [
+                              TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
+                              TextButton(onPressed: () => controller.dismiss(true), child: Text('Ok'))
+                            ],
+                          ),
+                        ),
+                        child: Text('Basics'),
                       ),
                       ElevatedButton(
-                        onPressed: () => context.showInfoBar(content: Text('Place information here!')),
-                        child: Text('Information Bar'),
+                        onPressed: () => context.showFlash<bool>(
+                          barrierDismissible: true,
+                          duration: const Duration(seconds: 3),
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            forwardAnimationCurve: Curves.easeInCirc,
+                            reverseAnimationCurve: Curves.bounceIn,
+                            position: FlashPosition.top,
+                            indicatorColor: Colors.red,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                            actions: [
+                              TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
+                              TextButton(onPressed: () => controller.dismiss(true), child: Text('Ok'))
+                            ],
+                          ),
+                        ),
+                        child: Text('Duration | Top | Dismissible'),
                       ),
                       ElevatedButton(
-                        onPressed: () => context.showErrorBar(content: Text('Place error here!')),
-                        child: Text('Error Bar'),
+                        onPressed: () => context.showFlash<bool>(
+                          barrierColor: Colors.black54,
+                          barrierBlur: 16,
+                          barrierDismissible: true,
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+                              side: BorderSide(),
+                            ),
+                            clipBehavior: Clip.hardEdge,
+                            indicatorColor: Colors.blue,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                            actions: [
+                              TextButton(onPressed: controller.dismiss, child: Text('Cancel')),
+                              TextButton(onPressed: () => controller.dismiss(true), child: Text('Ok'))
+                            ],
+                          ),
+                        ),
+                        child: Text('Bottom | Floating | Dismissible'),
                       ),
                       ElevatedButton(
-                        onPressed: () => _showDialogFlash(),
-                        child: Text('Simple Dialog'),
+                        onPressed: () => context.showFlash<bool>(
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            behavior: FlashBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              side: BorderSide(
+                                color: Colors.yellow,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              ),
+                            ),
+                            margin: const EdgeInsets.all(32.0),
+                            clipBehavior: Clip.antiAlias,
+                            indicatorColor: Colors.amber,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                          ),
+                        ),
+                        child: Text('Bottom | Fixed | Margin'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.showFlash<bool>(
+                          persistent: false,
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            behavior: FlashBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              side: BorderSide(
+                                color: Colors.yellow,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              ),
+                            ),
+                            margin: const EdgeInsets.all(32.0),
+                            clipBehavior: Clip.antiAlias,
+                            indicatorColor: Colors.red,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                          ),
+                        ),
+                        child: Text('Bottom | Fixed | Nonpersistent'),
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          var completer = Completer();
+                          final editController = TextEditingController();
+                          context
+                              .showFlash<String>(
+                                persistent: false,
+                                barrierColor: Colors.black54,
+                                barrierDismissible: true,
+                                builder: (context, controller) => FlashBar(
+                                  controller: controller,
+                                  clipBehavior: Clip.antiAlias,
+                                  indicatorColor: Colors.red,
+                                  icon: Icon(Icons.tips_and_updates_outlined),
+                                  title: Text('Flash Title'),
+                                  content: TextField(
+                                    controller: editController,
+                                    autofocus: true,
+                                  ),
+                                  primaryAction: IconButton(
+                                    onPressed: () => controller.dismiss(editController.text),
+                                    icon: Icon(Icons.send),
+                                  ),
+                                ),
+                              )
+                              .then((value) => value == null
+                                  ? context.showErrorBar(
+                                      position: FlashPosition.top,
+                                      content: Text('Say nothing!'),
+                                    )
+                                  : context.showSuccessBar(
+                                      position: FlashPosition.top,
+                                      icon: const Icon(Icons.support_agent),
+                                      content: Text('Say: $value'),
+                                    ));
+                        },
+                        child: Text('Bottom | Input | Nonpersistent'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.showInfoBar(content: Text('I am Info Bar!')),
+                        child: Text('Flash Info Bar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.showSuccessBar(content: Text('I am Success Bar!')),
+                        child: Text('Flash Success Bar'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.showErrorBar(
+                          content: Text('I am Error Bar!'),
+                          primaryActionBuilder: (context, controller) {
+                            return IconButton(
+                              onPressed: controller.dismiss,
+                              icon: Icon(Icons.undo),
+                            );
+                          },
+                        ),
+                        child: Text('Flash Error Bar'),
+                      ),
+                      Row(children: <Widget>[Text('Flash Dialog')]),
+                      ElevatedButton(
+                        onPressed: () => context.showFlash(
+                          barrierColor: Colors.black54,
+                          barrierDismissible: true,
+                          builder: (context, controller) => FadeTransition(
+                            opacity: controller.controller,
+                            child: AlertDialog(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(Radius.circular(16)),
+                                side: BorderSide(),
+                              ),
+                              contentPadding: EdgeInsets.only(left: 24.0, top: 16.0, right: 24.0, bottom: 16.0),
+                              title: Text('Title'),
+                              content: Text('Content'),
+                              actions: [
+                                TextButton(
+                                  onPressed: controller.dismiss,
+                                  child: Text('Ok'),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        child: Text('Alert Dialog'),
+                      ),
+                      Row(children: <Widget>[Text('Modal Flash')]),
+                      ElevatedButton(
+                        onPressed: () => context.showModalFlash(
+                          barrierBlur: 16,
+                          builder: (context, controller) => FlashBar(
+                            controller: controller,
+                            behavior: FlashBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(Radius.circular(16)),
+                              side: BorderSide(
+                                color: Colors.yellow,
+                                strokeAlign: BorderSide.strokeAlignInside,
+                              ),
+                            ),
+                            margin: const EdgeInsets.all(32.0),
+                            clipBehavior: Clip.antiAlias,
+                            indicatorColor: Colors.amber,
+                            icon: Icon(Icons.tips_and_updates_outlined),
+                            title: Text('Flash Title'),
+                            content: Text('This is basic flash.'),
+                          ),
+                        ),
+                        child: Text('Bar | Bottom | Floating | Margin'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => context.showModalFlash(
+                          builder: (context, controller) => RotationTransition(
+                            turns: controller.controller.drive(CurveTween(curve: Curves.bounceInOut)),
+                            child: FadeTransition(
+                              opacity: controller.controller.drive(CurveTween(curve: Curves.fastOutSlowIn)),
+                              child: SlideTransition(
+                                position: controller.controller.drive(Tween(begin: Offset(0.1, 0.1), end: Offset.zero)),
+                                child: AlertDialog(
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                                    side: BorderSide(),
+                                  ),
+                                  contentPadding: EdgeInsets.only(left: 24.0, top: 16.0, right: 24.0, bottom: 16.0),
+                                  title: Text('Title'),
+                                  content: Text('Content'),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: controller.dismiss,
+                                      child: Text('Ok'),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        child: Text('Alert Dialog'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () {
+                          final completer = Completer();
                           Future.delayed(Duration(seconds: 5)).then((_) => completer.complete());
-                          context.showBlockDialog(
-                            dismissCompleter: completer,
-                          );
+                          context.showBlockDialog(dismissCompleter: completer);
                         },
                         child: Text('Block Dialog'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          Future.delayed(Duration(seconds: 2), () => _showDialogFlash(persistent: false));
-                        },
-                        child: Text('Simple Dialog Delay'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.showModalFlashBar(
-                            title: Text('title'),
-                            content: Text('data'),
-                          );
-                        },
-                        child: Text('Modal flash bar'),
-                      ),
-                      ElevatedButton(
-                        onPressed: () {
-                          context.showModalFlashDialog(
-                            content: Text('data'),
-                          );
-                        },
-                        child: Text('Modal flash dialog'),
                       ),
                     ],
                   ),
@@ -303,196 +430,6 @@ class _FlashPageState extends State<FlashPage> {
         child: Icon(Icons.navigate_next),
       ),
     );
-  }
-
-  void _showBasicsFlash({
-    Duration? duration,
-    flashStyle = FlashBehavior.floating,
-  }) {
-    showFlash(
-      context: context,
-      duration: duration,
-      builder: (context, controller) {
-        return Flash(
-          controller: controller,
-          behavior: flashStyle,
-          position: FlashPosition.bottom,
-          boxShadows: kElevationToShadow[4],
-          horizontalDismissDirections: HorizontalDismissDirection.values,
-          child: FlashBar(
-            content: Text('This is a basic flash'),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showTopFlash({FlashBehavior style = FlashBehavior.floating}) {
-    showFlash(
-      context: context,
-      duration: const Duration(seconds: 2),
-      persistent: false,
-      barrierFilter: ImageFilter.blur(sigmaX: 3.0, sigmaY: 3.0),
-      barrierColor: Colors.black38,
-      barrierDismissible: true,
-      builder: (_, controller) {
-        return Flash(
-          controller: controller,
-          backgroundColor: Colors.white,
-          brightness: Brightness.light,
-          boxShadows: [BoxShadow(blurRadius: 4)],
-          behavior: style,
-          position: FlashPosition.top,
-          child: FlashBar(
-            title: Text('Title'),
-            content: Text('Hello world!'),
-            showProgressIndicator: true,
-            primaryAction: TextButton(
-              onPressed: () => controller.dismiss(),
-              child: Text('DISMISS', style: TextStyle(color: Colors.amber)),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  void _showBottomFlash({
-    bool persistent = true,
-    EdgeInsets margin = EdgeInsets.zero,
-  }) {
-    showFlash(
-      context: context,
-      persistent: persistent,
-      builder: (_, controller) {
-        return Flash(
-          controller: controller,
-          margin: margin,
-          behavior: FlashBehavior.fixed,
-          position: FlashPosition.bottom,
-          borderRadius: BorderRadius.circular(8.0),
-          borderColor: Colors.blue,
-          boxShadows: kElevationToShadow[8],
-          backgroundGradient: RadialGradient(
-            colors: [Colors.amber, Colors.black87],
-            center: Alignment.topLeft,
-            radius: 2,
-          ),
-          onTap: () => controller.dismiss(),
-          forwardAnimationCurve: Curves.easeInCirc,
-          reverseAnimationCurve: Curves.bounceIn,
-          child: DefaultTextStyle(
-            style: TextStyle(color: Colors.white),
-            child: FlashBar(
-              title: Text('Hello Flash'),
-              content: Text('You can put any message of any length here.'),
-              indicatorColor: Colors.red,
-              icon: Icon(Icons.info_outline),
-              primaryAction: TextButton(
-                onPressed: () => controller.dismiss(),
-                child: Text('DISMISS'),
-              ),
-              actions: <Widget>[
-                TextButton(onPressed: () => controller.dismiss('Yes, I do!'), child: Text('YES')),
-                TextButton(onPressed: () => controller.dismiss('No, I do not!'), child: Text('NO')),
-              ],
-            ),
-          ),
-        );
-      },
-    ).then((_) {
-      if (_ != null) {
-        _showMessage(_.toString());
-      }
-    });
-  }
-
-  void _showInputFlash({
-    bool persistent = true,
-    Color? barrierColor,
-  }) {
-    var editingController = TextEditingController();
-    context.showFlashBar(
-      persistent: persistent,
-      barrierColor: barrierColor,
-      borderWidth: 3,
-      behavior: FlashBehavior.fixed,
-      forwardAnimationCurve: Curves.fastLinearToSlowEaseIn,
-      title: Text('Hello Flash'),
-      content: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('You can put any message of any length here.'),
-          Form(
-            child: TextFormField(
-              controller: editingController,
-              autofocus: true,
-              decoration: InputDecoration(hintText: 'Please input something.'),
-            ),
-          ),
-        ],
-      ),
-      indicatorColor: Colors.red,
-      primaryActionBuilder: (context, controller) {
-        return IconButton(
-          onPressed: () {
-            if (editingController.text.isEmpty) {
-              controller.dismiss();
-            } else {
-              var message = editingController.text;
-              _showMessage(message);
-              editingController.text = '';
-            }
-          },
-          icon: Icon(Icons.send, color: Colors.amber),
-        );
-      },
-    );
-  }
-
-  void _showDialogFlash({bool persistent = true}) {
-    context.showFlashDialog(
-        constraints: BoxConstraints(maxWidth: 300),
-        persistent: persistent,
-        title: Text('Flash Dialog'),
-        content: Text('⚡️A highly customizable, powerful and easy-to-use alerting library for Flutter.'),
-        negativeActionBuilder: (context, controller) {
-          return TextButton(
-            onPressed: () {
-              controller.dismiss();
-            },
-            child: Text('NO'),
-          );
-        },
-        positiveActionBuilder: (context, controller) {
-          return TextButton(
-              onPressed: () {
-                controller.dismiss();
-              },
-              child: Text('YES'));
-        });
-  }
-
-  void _showMessage(String message) {
-    if (!mounted) return;
-    showFlash(
-        context: context,
-        duration: Duration(seconds: 3),
-        builder: (_, controller) {
-          return Flash(
-            controller: controller,
-            position: FlashPosition.top,
-            behavior: FlashBehavior.fixed,
-            child: FlashBar(
-              icon: Icon(
-                Icons.face,
-                size: 36.0,
-                color: Colors.black,
-              ),
-              content: Text(message),
-            ),
-          );
-        });
   }
 }
 
