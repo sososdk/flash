@@ -1,3 +1,6 @@
+## [3.0.0] - 2023-4-3
+- Publish 3.0.0
+
 ## [3.0.0-dev+1] - 2023-2-17
 - Refactor.
 - Add flash route.
