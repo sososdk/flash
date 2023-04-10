@@ -104,7 +104,7 @@ class _ToastState extends State<Toast> {
       return showFlash<T>(
         context: context,
         builder: (context, controller) {
-          final toastTheme = Theme.of(context).extension<FlashToastTheme>()!;
+          final toastTheme = Theme.of(context).extension<FlashToastTheme>() ?? FlashToastTheme();
           return Align(
             alignment: message.alignment ?? toastTheme.alignment,
             child: Padding(

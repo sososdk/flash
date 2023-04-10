@@ -1,3 +1,6 @@
+## [3.0.1] - 2023-4-3
+- Add default FlashBarTheme and FlashToastTheme.
+
 ## [3.0.0] - 2023-4-3
 - Publish 3.0.0
 

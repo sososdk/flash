@@ -40,7 +40,7 @@ class _AppState extends State<App> {
       title: 'Flash Demo',
       theme: ThemeData.light().copyWith(extensions: [FlashToastTheme(), FlashBarTheme()]),
       darkTheme: ThemeData.dark(),
-      themeMode: ThemeMode.light,
+      themeMode: ThemeMode.dark,
       home: HomePage(title: 'Flash Demo Home Page'),
     );
   }

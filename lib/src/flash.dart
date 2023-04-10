@@ -462,7 +462,7 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final barTheme = theme.extension<FlashBarTheme>()!;
+    final barTheme = theme.extension<FlashBarTheme>() ?? FlashBarTheme();
     final position = widget.position;
     final behavior = widget.behavior;
     final padding = widget.padding ?? barTheme.padding;
