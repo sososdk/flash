@@ -499,7 +499,8 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
 
   @override
   Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
-    return capturedThemes?.wrap(builder(context, this)) ?? builder(context, this);
+    final child = Builder(builder: (context) => builder(context, this));
+    return capturedThemes?.wrap(child) ?? child;
   }
 
   @override

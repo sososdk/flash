@@ -1,3 +1,6 @@
+## [3.0.2] - 2023-4-21
+- Fix: wrap captured theme child with Builder.
+
 ## [3.0.1] - 2023-4-3
 - Add default FlashBarTheme and FlashToastTheme.
 
