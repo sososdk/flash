@@ -22,6 +22,7 @@ Future<T?> showFlash<T>({
   Color? barrierColor,
   double? barrierBlur,
   bool barrierDismissible = false,
+  FutureOr<bool> Function()? onBarrierTap,
   Curve barrierCurve = Curves.ease,
   Duration? duration,
   bool persistent = true,
@@ -34,6 +35,7 @@ Future<T?> showFlash<T>({
     barrierColor: barrierColor,
     barrierBlur: barrierBlur,
     barrierDismissible: barrierDismissible,
+    onBarrierTap: onBarrierTap,
     barrierCurve: barrierCurve,
     duration: duration,
     persistent: persistent,
@@ -49,10 +51,12 @@ class DefaultFlashController<T> implements FlashController<T> {
     this.barrierColor,
     this.barrierBlur,
     this.barrierDismissible = false,
+    this.onBarrierTap,
     this.barrierCurve = Curves.ease,
     this.persistent = true,
     this.duration,
-  }) : route = ModalRoute.of(context) {
+  })  : assert(onBarrierTap == null || (barrierDismissible || barrierColor != null || barrierBlur != null)),
+        route = ModalRoute.of(context) {
     final rootOverlay = Navigator.of(context, rootNavigator: true).overlay;
     if (persistent) {
       overlay = rootOverlay;
@@ -74,6 +78,11 @@ class DefaultFlashController<T> implements FlashController<T> {
   final double? barrierBlur;
 
   final bool barrierDismissible;
+
+  /// Called when tap the barrier.
+  ///
+  /// If the returns that resolves to false, the flash will be dismiss.
+  final FutureOr<bool> Function()? onBarrierTap;
 
   /// The curve that is used for animating the modal barrier in and out.
   final Curve barrierCurve;
@@ -187,10 +196,7 @@ class DefaultFlashController<T> implements FlashController<T> {
     ];
   }
 
-  bool get hasBarrier =>
-      barrierDismissible ||
-      (barrierColor != null && barrierColor!.opacity != 0.0) ||
-      (barrierBlur != null && barrierBlur != 0.0);
+  bool get hasBarrier => barrierDismissible || barrierColor != null || barrierBlur != null;
 
   Widget _buildBarrier(BuildContext context) {
     Widget barrier;
@@ -220,7 +226,13 @@ class DefaultFlashController<T> implements FlashController<T> {
         cursor: SystemMouseCursors.basic,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: dismiss,
+          onTap: onBarrierTap == null
+              ? dismiss
+              : () async {
+                  if (!await onBarrierTap!()) {
+                    dismiss();
+                  }
+                },
           child: barrier,
         ),
       );
