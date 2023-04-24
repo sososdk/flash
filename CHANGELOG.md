@@ -1,5 +1,7 @@
-## [3.0.2] - 2023-4-21
+## [3.0.2] - 2023-4-24
 - Fix: wrap captured theme child with Builder.
+- Feat: add onBarrierTap. optimize default flash theme.
+- Fix: Flash animation handle.
 
 ## [3.0.1] - 2023-4-3
 - Add default FlashBarTheme and FlashToastTheme.
