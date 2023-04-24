@@ -330,6 +330,32 @@ class _FlashPageState extends State<FlashPage> {
                         ),
                         child: Text('Flash Error Bar'),
                       ),
+                      ElevatedButton(
+                        onPressed: () => context.showFlash(
+                          builder: (context, controller) {
+                            return Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Flash(
+                                controller: controller,
+                                child: SizedBox(
+                                  width: double.infinity,
+                                  child: Material(
+                                    elevation: 24,
+                                    child: SafeArea(
+                                      top: false,
+                                      child: Padding(
+                                        padding: EdgeInsets.all(16),
+                                        child: Text('A custom with Flash'),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        child: Text('Custom Flash Bar'),
+                      ),
                       Row(children: <Widget>[Text('Flash Dialog')]),
                       ElevatedButton(
                         onPressed: () => context.showFlash(

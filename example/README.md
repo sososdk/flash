@@ -17,5 +17,5 @@ flutter build web --dart-define=FLUTTER_WEB_USE_SKIA=true --release
 - Build Flutter web app to Github Pages to the docs folder
 
 ```bash
-flutter build web --dart-define=FLUTTER_WEB_USE_SKIA=true --release && rm -rf ../docs && mkdir ../docs && cp -a ./build/web/. ../docs/
+flutter build web --web-renderer html --base-href /flash/ --release && rm -rf ../docs && mkdir ../docs && cp -a ./build/web/. ../docs/
 ```
