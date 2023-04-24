@@ -146,11 +146,7 @@ class _FlashState<T> extends State<Flash<T>> {
     if (oldDragExtent.sign != _dragExtent.sign) {
       setState(() => _updateMoveAnimation());
     }
-    if (_dragExtent > 0) {
-      animationController.value -= (_dragExtent - oldDragExtent) / _childWidth;
-    } else {
-      animationController.value += (_dragExtent - oldDragExtent) / _childWidth;
-    }
+    animationController.value = (_childWidth - _dragExtent.abs()) / _childWidth;
   }
 
   void _handleHorizontalDragEnd(DragEndDetails details) {
@@ -199,10 +195,11 @@ class _FlashState<T> extends State<Flash<T>> {
     assert(widget.enableVerticalDrag);
     if (_dismissUnderway) return;
     _isDragging = true;
+    _dragExtent += details.primaryDelta!;
     if (widget.position == FlashPosition.top) {
-      animationController.value += details.primaryDelta! / _childHeight;
+      animationController.value = (_childHeight + _dragExtent) / _childHeight;
     } else {
-      animationController.value -= details.primaryDelta! / _childHeight;
+      animationController.value = (_childHeight - _dragExtent) / _childHeight;
     }
   }
 
