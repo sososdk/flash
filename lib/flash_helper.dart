@@ -104,27 +104,29 @@ class _ToastState extends State<Toast> {
       return showFlash<T>(
         context: context,
         builder: (context, controller) {
-          final toastTheme = Theme.of(context).extension<FlashToastTheme>() ?? FlashToastTheme();
+          final toastTheme = Theme.of(context).extension<FlashToastTheme>();
+          final defaults = _DefaultFlashToastTheme(context);
           return Align(
-            alignment: message.alignment ?? toastTheme.alignment,
+            alignment: message.alignment ?? toastTheme?.alignment ?? defaults.alignment,
             child: Padding(
-              padding: message.margin ?? toastTheme.margin,
+              padding: message.margin ?? toastTheme?.margin ?? defaults.margin,
               child: Flash(
                 controller: controller,
                 child: Material(
-                  color: message.backgroundColor ?? toastTheme.backgroundColor,
-                  elevation: message.elevation ?? toastTheme.elevation,
-                  shadowColor: message.shadowColor ?? toastTheme.shadowColor,
-                  surfaceTintColor: message.surfaceTintColor ?? toastTheme.surfaceTintColor,
-                  shape: message.shape ?? toastTheme.shape,
+                  color: message.backgroundColor ?? toastTheme?.backgroundColor ?? defaults.backgroundColor,
+                  elevation: message.elevation ?? toastTheme?.elevation ?? defaults.elevation,
+                  shadowColor: message.shadowColor ?? toastTheme?.shadowColor ?? defaults.shadowColor,
+                  surfaceTintColor:
+                      message.surfaceTintColor ?? toastTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
+                  shape: message.shape ?? toastTheme?.shape ?? defaults.shape,
                   type: MaterialType.card,
                   clipBehavior: message.clipBehavior,
                   child: Padding(
-                    padding: message.padding ?? toastTheme.padding,
+                    padding: message.padding ?? toastTheme?.padding ?? defaults.padding,
                     child: IconTheme(
-                      data: IconThemeData(color: message.iconColor ?? toastTheme.iconColor),
+                      data: IconThemeData(color: message.iconColor ?? toastTheme?.iconColor ?? defaults.iconColor),
                       child: DefaultTextStyle(
-                        style: message.textStyle ?? toastTheme.textStyle ?? Theme.of(context).textTheme.bodyMedium!,
+                        style: message.textStyle ?? toastTheme?.textStyle ?? defaults.textStyle!,
                         child: message.child,
                       ),
                     ),
@@ -149,6 +151,30 @@ class _ToastState extends State<Toast> {
 
     return showToast(message, queue: queue);
   }
+}
+
+class _DefaultFlashToastTheme extends FlashToastTheme {
+  _DefaultFlashToastTheme(this.context)
+      : _theme = Theme.of(context),
+        _textTheme = Theme.of(context).textTheme,
+        _iconTheme = Theme.of(context).iconTheme;
+
+  final BuildContext context;
+  final ThemeData _theme;
+  final TextTheme _textTheme;
+  final IconThemeData _iconTheme;
+
+  @override
+  Color? get iconColor => _iconTheme.color;
+
+  @override
+  Color? get backgroundColor => _theme.dialogBackgroundColor;
+
+  @override
+  Color? get shadowColor => _theme.shadowColor;
+
+  @override
+  TextStyle? get textStyle => _textTheme.titleLarge;
 }
 
 class ToastMessage<T> {

@@ -462,12 +462,15 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final barTheme = theme.extension<FlashBarTheme>() ?? FlashBarTheme();
+    final barTheme = theme.extension<FlashBarTheme>();
+    final defaults = _DefaultFlashBarTheme(context);
     final position = widget.position;
     final behavior = widget.behavior;
-    final padding = widget.padding ?? barTheme.padding;
-    final backgroundColor = widget.backgroundColor ?? barTheme.backgroundColor ?? theme.cardColor;
-
+    final padding = widget.padding ?? barTheme?.padding ?? defaults.padding;
+    final backgroundColor = widget.backgroundColor ?? barTheme?.backgroundColor ?? defaults.backgroundColor!;
+    final titleTextStyle = widget.titleTextStyle ?? barTheme?.titleTextStyle ?? defaults.titleTextStyle!;
+    final contentTextStyle = widget.contentTextStyle ?? barTheme?.contentTextStyle ?? defaults.contentTextStyle!;
+    final iconColor = widget.iconColor ?? barTheme?.iconColor ?? defaults.iconColor;
     Widget child = Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -491,7 +494,7 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
         IntrinsicHeight(
           child: Row(
             mainAxisSize: MainAxisSize.min,
-            children: _getAppropriateRowLayout(theme, barTheme, padding),
+            children: _getAppropriateRowLayout(titleTextStyle, contentTextStyle, iconColor, padding),
           ),
         ),
       ],
@@ -522,10 +525,10 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
       reverseAnimationCurve: widget.reverseAnimationCurve,
       child: Material(
         color: backgroundColor,
-        elevation: widget.elevation ?? barTheme.elevation,
-        shadowColor: widget.shadowColor ?? barTheme.shadowColor,
-        surfaceTintColor: widget.surfaceTintColor ?? barTheme.surfaceTintColor,
-        shape: widget.shape ?? barTheme.shape,
+        elevation: widget.elevation ?? barTheme?.elevation ?? defaults.elevation,
+        shadowColor: widget.shadowColor ?? barTheme?.shadowColor ?? defaults.shadowColor,
+        surfaceTintColor: widget.surfaceTintColor ?? barTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
+        shape: widget.shape ?? barTheme?.shape ?? defaults.shape,
         type: MaterialType.card,
         clipBehavior: widget.clipBehavior,
         child: child,
@@ -543,7 +546,7 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
     return Align(
       alignment: position == FlashPosition.top ? Alignment.topCenter : Alignment.bottomCenter,
       child: AnimatedPadding(
-        padding: MediaQuery.of(context).viewInsets + (widget.margin ?? barTheme.margin),
+        padding: MediaQuery.of(context).viewInsets + (widget.margin ?? barTheme?.margin ?? defaults.margin),
         duration: widget.insetAnimationDuration,
         curve: widget.insetAnimationCurve,
         child: child,
@@ -551,12 +554,10 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
     );
   }
 
-  List<Widget> _getAppropriateRowLayout(ThemeData theme, FlashBarTheme barTheme, EdgeInsets padding) {
+  List<Widget> _getAppropriateRowLayout(
+      TextStyle titleTextStyle, TextStyle contentTextStyle, Color? iconColor, EdgeInsets padding) {
     final messageTopMargin = _isTitlePresent ? 6.0 : padding.top;
     final messageBottomMargin = _isActionsPresent ? 6.0 : padding.bottom;
-    final titleTextStyle = widget.titleTextStyle ?? barTheme.titleTextStyle ?? theme.textTheme.titleLarge!;
-    final contentTextStyle = widget.contentTextStyle ?? barTheme.contentTextStyle ?? theme.textTheme.titleMedium!;
-    final iconColor = widget.iconColor ?? barTheme.iconColor;
     double buttonRightPadding;
     double iconPadding = 0;
     if (padding.right - 12 < 0) {
@@ -992,4 +993,31 @@ class FlashBarTheme extends ThemeExtension<FlashBarTheme> {
       contentTextStyle: TextStyle.lerp(contentTextStyle, other?.contentTextStyle, t),
     );
   }
+}
+
+class _DefaultFlashBarTheme extends FlashBarTheme {
+  _DefaultFlashBarTheme(this.context)
+      : _theme = Theme.of(context),
+        _textTheme = Theme.of(context).textTheme,
+        _iconTheme = Theme.of(context).iconTheme;
+
+  final BuildContext context;
+  final ThemeData _theme;
+  final TextTheme _textTheme;
+  final IconThemeData _iconTheme;
+
+  @override
+  Color? get iconColor => _iconTheme.color;
+
+  @override
+  Color? get backgroundColor => _theme.dialogBackgroundColor;
+
+  @override
+  Color? get shadowColor => _theme.shadowColor;
+
+  @override
+  TextStyle? get titleTextStyle => _textTheme.titleLarge;
+
+  @override
+  TextStyle? get contentTextStyle => _textTheme.titleMedium;
 }
