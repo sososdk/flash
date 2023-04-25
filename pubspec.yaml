@@ -1,6 +1,6 @@
 name: flash
 description: A highly customizable, powerful and easy-to-use alerting library for Flutter. 
-version: 3.0.2
+version: 3.0.3
 homepage: https://github.com/sososdk/flash
 
 environment:

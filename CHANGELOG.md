@@ -1,3 +1,6 @@
+## [3.0.3] - 2023-4-25
+- Refactor: flash dismiss direction and add slideAnimationCreator to customize slide animation.
+
 ## [3.0.2] - 2023-4-24
 - Fix: wrap captured theme child with Builder.
 - Feat: add onBarrierTap. optimize default flash theme.

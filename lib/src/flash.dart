@@ -8,17 +8,31 @@ import 'flash_controller.dart';
 const double _kMinFlingVelocity = 700.0;
 const double _kDismissThreshold = 0.5;
 
+/// The direction in which a [Flash] can be dismissed.
+enum FlashDismissDirection {
+  /// The [Flash] can be dismissed by dragging either up([FlashPosition.top]) or down([FlashPosition.bottom]).
+  vertical,
+
+  /// The [Flash] can be dismissed by dragging in the reverse of the
+  /// reading direction (e.g., from right to left in left-to-right languages).
+  endToStart,
+
+  /// The [Flash] can be dismissed by dragging in the reading direction
+  /// (e.g., from left to right in left-to-right languages).
+  startToEnd,
+}
+
 /// A highly customizable widget so you can notify your user when you fell like he needs a beautiful explanation.
 class Flash<T> extends StatefulWidget {
   const Flash({
     Key? key,
     required this.controller,
     required this.child,
-    this.position = FlashPosition.bottom,
-    this.enableVerticalDrag = true,
-    this.enableHorizontalDrag = true,
+    this.position,
+    this.dismissDirections = const [],
     this.forwardAnimationCurve = Curves.easeOut,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
+    this.slideAnimationCreator = _defaultSlideAnimationCreator,
   }) : super(key: key);
 
   final FlashController<T> controller;
@@ -31,17 +45,36 @@ class Flash<T> extends StatefulWidget {
   /// Flash can be based on [FlashPosition.top] or on [FlashPosition.bottom] of your screen.
   final FlashPosition? position;
 
-  /// Determines if the user can swipe vertically to dismiss the bar.
-  final bool enableVerticalDrag;
+  /// The direction in which the widget can be dismissed.
+  final List<FlashDismissDirection> dismissDirections;
 
-  /// Determines if the user can swipe horizontally to dismiss the bar.
-  final bool enableHorizontalDrag;
-
-  /// The [Curve] animation used when show() is called. [Curves.fastOutSlowIn] is default.
+  /// The [Curve] animation used when show() is called. [Curves.easeOut] is default.
   final Curve forwardAnimationCurve;
 
   /// The [Curve] animation used when dismiss() is called. [Curves.fastOutSlowIn] is default.
-  final Curve reverseAnimationCurve;
+  final Curve? reverseAnimationCurve;
+
+  /// Called to create the animation that exposes the current progress of the transition
+  /// controlled by the animation controller created by [FlashController.createAnimationController].
+  final Animation<Offset> Function(FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve)
+      slideAnimationCreator;
+
+  static Animation<Offset> _defaultSlideAnimationCreator(
+      FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve) {
+    Animatable<Offset> animatable;
+    if (position == FlashPosition.top) {
+      animatable = Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
+    } else if (position == FlashPosition.bottom) {
+      animatable = Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
+    } else {
+      animatable = Tween<Offset>(begin: Offset.zero, end: Offset.zero);
+    }
+    return CurvedAnimation(
+      parent: parent,
+      curve: curve,
+      reverseCurve: reverseCurve,
+    ).drive(animatable);
+  }
 
   @override
   State createState() => _FlashState<T>();
@@ -60,9 +93,13 @@ class _FlashState<T> extends State<Flash<T>> {
     return box.size.height;
   }
 
-  bool get enableVerticalDrag => widget.enableVerticalDrag;
+  bool get enableVerticalDrag => widget.dismissDirections.contains(FlashDismissDirection.vertical);
 
-  bool get enableHorizontalDrag => widget.enableHorizontalDrag;
+  bool get enableEndToStartDrag => widget.dismissDirections.contains(FlashDismissDirection.endToStart);
+
+  bool get enableStartToEndDrag => widget.dismissDirections.contains(FlashDismissDirection.startToEnd);
+
+  bool get enableHorizontalDrag => enableEndToStartDrag || enableStartToEndDrag;
 
   FlashController get controller => widget.controller;
 
@@ -82,7 +119,12 @@ class _FlashState<T> extends State<Flash<T>> {
   void initState() {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
-    _moveAnimation = _animation = _createAnimation();
+    _moveAnimation = _animation = widget.slideAnimationCreator(
+      widget.position,
+      animationController,
+      widget.forwardAnimationCurve,
+      widget.reverseAnimationCurve,
+    );
   }
 
   @override
@@ -99,50 +141,54 @@ class _FlashState<T> extends State<Flash<T>> {
     return SlideTransition(
       key: _childKey,
       position: _moveAnimation,
-      child: FadeTransition(
-        opacity: animationController.drive(
-          Tween<double>(begin: 0.0, end: 1.0),
-        ),
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onHorizontalDragUpdate: enableHorizontalDrag ? _handleHorizontalDragUpdate : null,
-          onHorizontalDragEnd: enableHorizontalDrag ? _handleHorizontalDragEnd : null,
-          onVerticalDragUpdate: enableVerticalDrag ? _handleVerticalDragUpdate : null,
-          onVerticalDragEnd: enableVerticalDrag ? _handleVerticalDragEnd : null,
-          child: widget.child,
-          excludeFromSemantics: true,
-        ),
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragUpdate: enableHorizontalDrag ? _handleHorizontalDragUpdate : null,
+        onHorizontalDragEnd: enableHorizontalDrag ? _handleHorizontalDragEnd : null,
+        onVerticalDragUpdate: enableVerticalDrag ? _handleVerticalDragUpdate : null,
+        onVerticalDragEnd: enableVerticalDrag ? _handleVerticalDragEnd : null,
+        child: widget.child,
+        excludeFromSemantics: true,
       ),
     );
   }
 
-  /// Called to create the animation that exposes the current progress of
-  /// the transition controlled by the animation controller created by
-  /// [DefaultFlashController.createAnimationController].
-  Animation<Offset> _createAnimation() {
-    Animatable<Offset> animatable;
-    if (widget.position == FlashPosition.top) {
-      animatable = Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
-    } else if (widget.position == FlashPosition.bottom) {
-      animatable = Tween<Offset>(begin: const Offset(0.0, 1.0), end: Offset.zero);
-    } else {
-      animatable = Tween<Offset>(begin: const Offset(0.0, 0.05), end: Offset.zero);
-    }
-    return CurvedAnimation(
-      parent: animationController,
-      curve: widget.forwardAnimationCurve,
-      reverseCurve: widget.reverseAnimationCurve,
-    ).drive(animatable);
-  }
-
   void _handleHorizontalDragUpdate(DragUpdateDetails details) {
-    assert(widget.enableVerticalDrag);
+    assert(enableHorizontalDrag);
     if (_dismissUnderway) return;
     _isDragging = true;
     _isHorizontalDragging = true;
     final double delta = details.primaryDelta!;
     final double oldDragExtent = _dragExtent;
-    _dragExtent += delta;
+    if (enableEndToStartDrag && enableStartToEndDrag) {
+      _dragExtent += delta;
+    } else if (enableEndToStartDrag) {
+      switch (Directionality.of(context)) {
+        case TextDirection.rtl:
+          if (_dragExtent + delta > 0) {
+            _dragExtent += delta;
+          }
+          break;
+        case TextDirection.ltr:
+          if (_dragExtent + delta < 0) {
+            _dragExtent += delta;
+          }
+          break;
+      }
+    } else {
+      switch (Directionality.of(context)) {
+        case TextDirection.rtl:
+          if (_dragExtent + delta < 0) {
+            _dragExtent += delta;
+          }
+          break;
+        case TextDirection.ltr:
+          if (_dragExtent + delta > 0) {
+            _dragExtent += delta;
+          }
+          break;
+      }
+    }
     if (oldDragExtent.sign != _dragExtent.sign) {
       setState(() => _updateMoveAnimation());
     }
@@ -192,7 +238,7 @@ class _FlashState<T> extends State<Flash<T>> {
   }
 
   void _handleVerticalDragUpdate(DragUpdateDetails details) {
-    assert(widget.enableVerticalDrag);
+    assert(enableVerticalDrag);
     if (_dismissUnderway) return;
     _isDragging = true;
     _dragExtent += details.primaryDelta!;
@@ -204,7 +250,7 @@ class _FlashState<T> extends State<Flash<T>> {
   }
 
   void _handleVerticalDragEnd(DragEndDetails details) {
-    assert(widget.enableVerticalDrag);
+    assert(enableVerticalDrag);
     if (_dismissUnderway) return;
     _isDragging = false;
     _dragExtent = 0.0;
@@ -277,8 +323,7 @@ class FlashBar<T> extends StatefulWidget {
     required this.controller,
     this.position = FlashPosition.bottom,
     this.behavior = FlashBehavior.fixed,
-    this.enableVerticalDrag = true,
-    this.enableHorizontalDrag = true,
+    this.dismissDirections = FlashDismissDirection.values,
     this.forwardAnimationCurve = Curves.easeOut,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
     this.margin,
@@ -315,9 +360,8 @@ class FlashBar<T> extends StatefulWidget {
   /// Flash can be floating or be grounded to the edge of the screen.
   final FlashBehavior? behavior;
 
-  final bool enableVerticalDrag;
-
-  final bool enableHorizontalDrag;
+  /// The direction in which the widget can be dismissed.
+  final List<FlashDismissDirection> dismissDirections;
 
   final Curve forwardAnimationCurve;
 
@@ -513,22 +557,24 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
       );
     }
 
-    child = Flash(
-      controller: widget.controller,
-      position: position,
-      enableVerticalDrag: widget.enableVerticalDrag,
-      enableHorizontalDrag: widget.enableHorizontalDrag,
-      forwardAnimationCurve: widget.forwardAnimationCurve,
-      reverseAnimationCurve: widget.reverseAnimationCurve,
-      child: Material(
-        color: backgroundColor,
-        elevation: widget.elevation ?? barTheme?.elevation ?? defaults.elevation,
-        shadowColor: widget.shadowColor ?? barTheme?.shadowColor ?? defaults.shadowColor,
-        surfaceTintColor: widget.surfaceTintColor ?? barTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
-        shape: widget.shape ?? barTheme?.shape ?? defaults.shape,
-        type: MaterialType.card,
-        clipBehavior: widget.clipBehavior,
-        child: child,
+    child = FadeTransition(
+      opacity: widget.controller.controller,
+      child: Flash(
+        controller: widget.controller,
+        position: position,
+        dismissDirections: widget.dismissDirections,
+        forwardAnimationCurve: widget.forwardAnimationCurve,
+        reverseAnimationCurve: widget.reverseAnimationCurve,
+        child: Material(
+          color: backgroundColor,
+          elevation: widget.elevation ?? barTheme?.elevation ?? defaults.elevation,
+          shadowColor: widget.shadowColor ?? barTheme?.shadowColor ?? defaults.shadowColor,
+          surfaceTintColor: widget.surfaceTintColor ?? barTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
+          shape: widget.shape ?? barTheme?.shape ?? defaults.shape,
+          type: MaterialType.card,
+          clipBehavior: widget.clipBehavior,
+          child: child,
+        ),
       ),
     );
 

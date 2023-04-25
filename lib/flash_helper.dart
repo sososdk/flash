@@ -110,24 +110,29 @@ class _ToastState extends State<Toast> {
             alignment: message.alignment ?? toastTheme?.alignment ?? defaults.alignment,
             child: Padding(
               padding: message.margin ?? toastTheme?.margin ?? defaults.margin,
-              child: Flash(
-                controller: controller,
-                child: Material(
-                  color: message.backgroundColor ?? toastTheme?.backgroundColor ?? defaults.backgroundColor,
-                  elevation: message.elevation ?? toastTheme?.elevation ?? defaults.elevation,
-                  shadowColor: message.shadowColor ?? toastTheme?.shadowColor ?? defaults.shadowColor,
-                  surfaceTintColor:
-                      message.surfaceTintColor ?? toastTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
-                  shape: message.shape ?? toastTheme?.shape ?? defaults.shape,
-                  type: MaterialType.card,
-                  clipBehavior: message.clipBehavior,
-                  child: Padding(
-                    padding: message.padding ?? toastTheme?.padding ?? defaults.padding,
-                    child: IconTheme(
-                      data: IconThemeData(color: message.iconColor ?? toastTheme?.iconColor ?? defaults.iconColor),
-                      child: DefaultTextStyle(
-                        style: message.textStyle ?? toastTheme?.textStyle ?? defaults.textStyle!,
-                        child: message.child,
+              child: FadeTransition(
+                opacity: controller.controller,
+                child: Flash(
+                  controller: controller,
+                  position: FlashPosition.bottom,
+                  dismissDirections: FlashDismissDirection.values,
+                  child: Material(
+                    color: message.backgroundColor ?? toastTheme?.backgroundColor ?? defaults.backgroundColor,
+                    elevation: message.elevation ?? toastTheme?.elevation ?? defaults.elevation,
+                    shadowColor: message.shadowColor ?? toastTheme?.shadowColor ?? defaults.shadowColor,
+                    surfaceTintColor:
+                        message.surfaceTintColor ?? toastTheme?.surfaceTintColor ?? defaults.surfaceTintColor,
+                    shape: message.shape ?? toastTheme?.shape ?? defaults.shape,
+                    type: MaterialType.card,
+                    clipBehavior: message.clipBehavior,
+                    child: Padding(
+                      padding: message.padding ?? toastTheme?.padding ?? defaults.padding,
+                      child: IconTheme(
+                        data: IconThemeData(color: message.iconColor ?? toastTheme?.iconColor ?? defaults.iconColor),
+                        child: DefaultTextStyle(
+                          style: message.textStyle ?? toastTheme?.textStyle ?? defaults.textStyle!,
+                          child: message.child,
+                        ),
                       ),
                     ),
                   ),
