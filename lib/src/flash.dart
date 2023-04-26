@@ -77,7 +77,7 @@ class Flash<T> extends StatefulWidget {
   }
 
   @override
-  State createState() => _FlashState<T>();
+  State<Flash<T>> createState() => _FlashState<T>();
 }
 
 class _FlashState<T> extends State<Flash<T>> {
@@ -142,7 +142,7 @@ class _FlashState<T> extends State<Flash<T>> {
       key: _childKey,
       position: _moveAnimation,
       child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
+        behavior: HitTestBehavior.deferToChild,
         onHorizontalDragUpdate: enableHorizontalDrag ? _handleHorizontalDragUpdate : null,
         onHorizontalDragEnd: enableHorizontalDrag ? _handleHorizontalDragEnd : null,
         onVerticalDragUpdate: enableVerticalDrag ? _handleVerticalDragUpdate : null,
@@ -229,12 +229,28 @@ class _FlashState<T> extends State<Flash<T>> {
 
   _FlingGestureKind _describeFlingGesture(double dragExtent) {
     _FlingGestureKind kind = _FlingGestureKind.none;
-    if (dragExtent > 0) {
-      kind = _FlingGestureKind.forward;
+    if (enableEndToStartDrag && enableStartToEndDrag) {
+      if (dragExtent > 0) {
+        kind = _FlingGestureKind.forward;
+      } else if (dragExtent < 0) {
+        kind = _FlingGestureKind.reverse;
+      }
+      return kind;
+    } else if (enableEndToStartDrag) {
+      switch (Directionality.of(context)) {
+        case TextDirection.rtl:
+          return dragExtent < 0 ? _FlingGestureKind.none : _FlingGestureKind.forward;
+        case TextDirection.ltr:
+          return dragExtent > 0 ? _FlingGestureKind.none : _FlingGestureKind.reverse;
+      }
     } else {
-      kind = _FlingGestureKind.reverse;
+      switch (Directionality.of(context)) {
+        case TextDirection.rtl:
+          return dragExtent < 0 ? _FlingGestureKind.reverse : _FlingGestureKind.none;
+        case TextDirection.ltr:
+          return dragExtent > 0 ? _FlingGestureKind.forward : _FlingGestureKind.none;
+      }
     }
-    return kind;
   }
 
   void _handleVerticalDragUpdate(DragUpdateDetails details) {

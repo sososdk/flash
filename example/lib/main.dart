@@ -384,8 +384,12 @@ class _FlashPageState extends State<FlashPage> {
                             turns: controller.controller.drive(CurveTween(curve: Curves.bounceInOut)),
                             child: FadeTransition(
                               opacity: controller.controller.drive(CurveTween(curve: Curves.fastOutSlowIn)),
-                              child: SlideTransition(
-                                position: controller.controller.drive(Tween(begin: Offset(0.1, 0.1), end: Offset.zero)),
+                              child: Flash(
+                                controller: controller,
+                                dismissDirections: FlashDismissDirection.values,
+                                slideAnimationCreator: (position, parent, curve, reverseCurve) {
+                                  return controller.controller.drive(Tween(begin: Offset(0.1, 0.1), end: Offset.zero));
+                                },
                                 child: AlertDialog(
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -455,7 +459,13 @@ class _FlashPageState extends State<FlashPage> {
                                   controller: controller,
                                   slideAnimationCreator: (position, parent, curve, reverseCurve) {
                                     return CurvedAnimation(parent: parent, curve: curve, reverseCurve: reverseCurve)
-                                        .drive(Tween<Offset>(begin: const Offset(-1.0, 0.0), end: Offset.zero));
+                                        .drive(Tween<Offset>(
+                                            begin: Offset(
+                                              Directionality.of(context) == TextDirection.ltr ? -1.0 : 1.0,
+                                              // -1.0,
+                                              0.0,
+                                            ),
+                                            end: Offset.zero));
                                   },
                                   dismissDirections: [FlashDismissDirection.endToStart],
                                   child: FractionallySizedBox(
