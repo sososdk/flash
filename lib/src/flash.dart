@@ -120,6 +120,11 @@ class _FlashState<T> extends State<Flash<T>> {
   void initState() {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
     _moveAnimation = _animation = widget.slideAnimationCreator(
       context,
       widget.position,

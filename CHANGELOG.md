@@ -1,6 +1,7 @@
-## [3.0.3+2] - 2023-4-26
+## [3.0.3+4] - 2023-4-26
 - Fix: set FLash hit test behavior to `HitTestBehavior.deferToChild`.
 - Add context for slide animation creator.
+- Fix: create slide animation before initState completed.
 
 ## [3.0.3] - 2023-4-25
 - Refactor: flash dismiss direction and add slideAnimationCreator to customize slide animation.
