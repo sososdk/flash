@@ -56,11 +56,12 @@ class Flash<T> extends StatefulWidget {
 
   /// Called to create the animation that exposes the current progress of the transition
   /// controlled by the animation controller created by [FlashController.createAnimationController].
-  final Animation<Offset> Function(FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve)
+  final Animation<Offset> Function(
+          BuildContext context, FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve)
       slideAnimationCreator;
 
   static Animation<Offset> _defaultSlideAnimationCreator(
-      FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve) {
+      BuildContext context, FlashPosition? position, Animation<double> parent, Curve curve, Curve? reverseCurve) {
     Animatable<Offset> animatable;
     if (position == FlashPosition.top) {
       animatable = Tween<Offset>(begin: const Offset(0.0, -1.0), end: Offset.zero);
@@ -120,6 +121,7 @@ class _FlashState<T> extends State<Flash<T>> {
     super.initState();
     animationController.addStatusListener(_handleStatusChanged);
     _moveAnimation = _animation = widget.slideAnimationCreator(
+      context,
       widget.position,
       animationController,
       widget.forwardAnimationCurve,

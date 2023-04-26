@@ -387,7 +387,7 @@ class _FlashPageState extends State<FlashPage> {
                               child: Flash(
                                 controller: controller,
                                 dismissDirections: FlashDismissDirection.values,
-                                slideAnimationCreator: (position, parent, curve, reverseCurve) {
+                                slideAnimationCreator: (context, position, parent, curve, reverseCurve) {
                                   return controller.controller.drive(Tween(begin: Offset(0.1, 0.1), end: Offset.zero));
                                 },
                                 child: AlertDialog(
@@ -457,7 +457,7 @@ class _FlashPageState extends State<FlashPage> {
                                 opacity: controller.controller.drive(Tween(begin: 0.5, end: 1.0)),
                                 child: Flash(
                                   controller: controller,
-                                  slideAnimationCreator: (position, parent, curve, reverseCurve) {
+                                  slideAnimationCreator: (context, position, parent, curve, reverseCurve) {
                                     return CurvedAnimation(parent: parent, curve: curve, reverseCurve: reverseCurve)
                                         .drive(Tween<Offset>(
                                             begin: Offset(
