@@ -1,3 +1,6 @@
+## [3.0.3+5] - 2023-4-27
+- Change the default Toast text style to bodyLarge.
+
 ## [3.0.3+4] - 2023-4-26
 - Fix: set FLash hit test behavior to `HitTestBehavior.deferToChild`.
 - Add context for slide animation creator.

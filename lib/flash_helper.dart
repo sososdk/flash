@@ -179,7 +179,7 @@ class _DefaultFlashToastTheme extends FlashToastTheme {
   Color? get shadowColor => _theme.shadowColor;
 
   @override
-  TextStyle? get textStyle => _textTheme.titleLarge;
+  TextStyle? get textStyle => _textTheme.bodyLarge;
 }
 
 class ToastMessage<T> {
