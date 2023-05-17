@@ -373,6 +373,7 @@ class FlashBar<T> extends StatefulWidget {
     this.progressIndicatorValue,
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
+    this.useSafeArea = true,
   }) : super(key: key);
 
   final FlashController<T> controller;
@@ -470,6 +471,9 @@ class FlashBar<T> extends StatefulWidget {
   /// A [LinearProgressIndicator] configuration parameter.
   final Animation<Color>? progressIndicatorValueColor;
 
+  /// Prevents showing in safearea
+  final bool useSafeArea;
+
   @override
   State<FlashBar> createState() => _FlashBarState();
 }
@@ -566,8 +570,8 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
 
     if (behavior == FlashBehavior.fixed) {
       child = SafeArea(
-        bottom: position == FlashPosition.bottom,
-        top: position == FlashPosition.top,
+        bottom: widget.useSafeArea && position == FlashPosition.bottom,
+        top: widget.useSafeArea && position == FlashPosition.top,
         child: child,
       );
     }
@@ -603,8 +607,8 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
 
     if (behavior == FlashBehavior.floating) {
       child = SafeArea(
-        bottom: position == FlashPosition.bottom,
-        top: position == FlashPosition.top,
+        bottom: widget.useSafeArea && position == FlashPosition.bottom,
+        top: widget.useSafeArea && position == FlashPosition.top,
         child: child,
       );
     }

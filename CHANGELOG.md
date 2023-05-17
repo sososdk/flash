@@ -1,3 +1,6 @@
+## [3.0.4] - 2023-5-17
+- Fix using safe area is now optional.
+
 ## [3.0.3+5] - 2023-4-27
 - Change the default Toast text style to bodyLarge.
 
