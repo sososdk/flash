@@ -374,6 +374,7 @@ class FlashBar<T> extends StatefulWidget {
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
     this.useSafeArea = true,
+    this.addViewInsets = true,
   }) : super(key: key);
 
   final FlashController<T> controller;
@@ -473,6 +474,9 @@ class FlashBar<T> extends StatefulWidget {
 
   /// Prevents showing in [SafeArea].
   final bool useSafeArea;
+
+  /// Add MediaQuery.of(context).viewInsets to FlashBar position or not
+  final bool addViewInsets;
 
   @override
   State<FlashBar> createState() => _FlashBarState();
@@ -616,7 +620,8 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
     return Align(
       alignment: position == FlashPosition.top ? Alignment.topCenter : Alignment.bottomCenter,
       child: AnimatedPadding(
-        padding: MediaQuery.of(context).viewInsets + (widget.margin ?? barTheme?.margin ?? defaults.margin),
+        padding: (widget.addViewInsets ? MediaQuery.of(context).viewInsets : EdgeInsets.zero) +
+            (widget.margin ?? barTheme?.margin ?? defaults.margin),
         duration: widget.insetAnimationDuration,
         curve: widget.insetAnimationCurve,
         child: child,

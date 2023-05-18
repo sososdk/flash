@@ -1,3 +1,6 @@
+## [3.0.5] - 2023-5-18
+- Fix: Adding MediaQuery.of(context).viewInsets to FlashBar position is now optional.
+
 ## [3.0.4] - 2023-5-18
 - Fix using safe area is now optional.
 
