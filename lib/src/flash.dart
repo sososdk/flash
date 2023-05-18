@@ -471,7 +471,7 @@ class FlashBar<T> extends StatefulWidget {
   /// A [LinearProgressIndicator] configuration parameter.
   final Animation<Color>? progressIndicatorValueColor;
 
-  /// Prevents showing in safearea
+  /// Prevents showing in [SafeArea].
   final bool useSafeArea;
 
   @override
