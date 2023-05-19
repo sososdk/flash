@@ -619,7 +619,14 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
         padding: MediaQuery.of(context).viewInsets + (widget.margin ?? barTheme?.margin ?? defaults.margin),
         duration: widget.insetAnimationDuration,
         curve: widget.insetAnimationCurve,
-        child: child,
+        child: MediaQuery.removeViewInsets(
+          removeLeft: true,
+          removeTop: true,
+          removeRight: true,
+          removeBottom: true,
+          context: context,
+          child: child,
+        ),
       ),
     );
   }

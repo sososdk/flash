@@ -1,3 +1,6 @@
+## [3.0.5] - 2023-5-19
+- Fix remove view insets of child.
+
 ## [3.0.4] - 2023-5-18
 - Fix using safe area is now optional.
 
