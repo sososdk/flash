@@ -1,3 +1,6 @@
+## [3.0.5+1] - 2023-5-30
+- `FlashBar` add `builder` param to warp child.
+
 ## [3.0.5] - 2023-5-19
 - Fix remove view insets of child.
 

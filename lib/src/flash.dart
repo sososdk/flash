@@ -374,6 +374,7 @@ class FlashBar<T> extends StatefulWidget {
     this.progressIndicatorBackgroundColor,
     this.progressIndicatorValueColor,
     this.useSafeArea = true,
+    this.builder,
   }) : super(key: key);
 
   final FlashController<T> controller;
@@ -473,6 +474,9 @@ class FlashBar<T> extends StatefulWidget {
 
   /// Prevents showing in [SafeArea].
   final bool useSafeArea;
+
+  /// Used to wrap the child widget.
+  final TransitionBuilder? builder;
 
   @override
   State<FlashBar> createState() => _FlashBarState();
@@ -600,7 +604,7 @@ class _FlashBarState extends State<FlashBar> with SingleTickerProviderStateMixin
           shape: widget.shape ?? barTheme?.shape ?? defaults.shape,
           type: MaterialType.card,
           clipBehavior: widget.clipBehavior,
-          child: child,
+          child: widget.builder == null ? child : widget.builder!(context, child),
         ),
       ),
     );
