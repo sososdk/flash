@@ -26,6 +26,7 @@ Future<T?> showFlash<T>({
   Curve barrierCurve = Curves.ease,
   Duration? duration,
   bool persistent = true,
+  VoidCallback? onRemoveFromRoute,
 }) {
   return DefaultFlashController<T>(
     context,
@@ -39,6 +40,7 @@ Future<T?> showFlash<T>({
     barrierCurve: barrierCurve,
     duration: duration,
     persistent: persistent,
+    onRemoveFromRoute: onRemoveFromRoute,
   ).show();
 }
 
@@ -54,6 +56,7 @@ class DefaultFlashController<T> implements FlashController<T> {
     this.onBarrierTap,
     this.barrierCurve = Curves.ease,
     this.persistent = true,
+    this.onRemoveFromRoute,
     this.duration,
   })  : assert(onBarrierTap == null || (barrierDismissible || barrierColor != null || barrierBlur != null)),
         route = ModalRoute.of(context) {
@@ -119,9 +122,11 @@ class DefaultFlashController<T> implements FlashController<T> {
   /// ```
   final bool persistent;
 
+  /// Called when this flash is removed from the history of its associated [LocalHistoryRoute].
+  /// Only works when [persistent] is false.
+  final VoidCallback? onRemoveFromRoute;
+
   /// The animation controller that the route uses to drive the transitions.
-  ///
-  /// The animation itself is exposed by the [animation] property.
   @override
   AnimationController get controller => _controller;
   late AnimationController _controller;
@@ -257,6 +262,7 @@ class DefaultFlashController<T> implements FlashController<T> {
     if (!persistent) {
       _historyEntry = LocalHistoryEntry(onRemove: () {
         assert(!_transitionCompleter.isCompleted, 'Cannot reuse a $runtimeType after disposing it.');
+        onRemoveFromRoute?.call();
         _removedHistoryEntry = true;
         if (!_dismissed) {
           _cancelTimer();

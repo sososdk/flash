@@ -269,6 +269,7 @@ extension FlashShortcuts on BuildContext {
     FutureOr<bool> Function()? onBarrierTap,
     Curve barrierCurve = Curves.ease,
     bool persistent = true,
+    VoidCallback? onRemoveFromRoute,
     Duration? duration,
     required FlashBuilder<T> builder,
     Completer<T>? dismissCompleter,
@@ -283,6 +284,7 @@ extension FlashShortcuts on BuildContext {
       onBarrierTap: onBarrierTap,
       barrierCurve: barrierCurve,
       persistent: persistent,
+      onRemoveFromRoute: onRemoveFromRoute,
       duration: duration,
       builder: builder,
     );

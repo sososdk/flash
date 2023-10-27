@@ -1,3 +1,6 @@
+## [3.0.5+2] - 2023-10-27
+- Add `onRemoveFromRoute` in `DefaultFlashController`, it only works when `persistent` is false.
+
 ## [3.0.5+1] - 2023-5-30
 - `FlashBar` add `builder` param to warp child.
 

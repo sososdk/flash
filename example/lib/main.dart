@@ -251,6 +251,9 @@ class _FlashPageState extends State<FlashPage> {
                       ElevatedButton(
                         onPressed: () => context.showFlash<bool>(
                           persistent: false,
+                          onRemoveFromRoute: () {
+                            context.showToast(Text('Flash removed'));
+                          },
                           builder: (context, controller) => FlashBar(
                             controller: controller,
                             behavior: FlashBehavior.floating,
