@@ -25,7 +25,7 @@ enum FlashDismissDirection {
 /// A highly customizable widget so you can notify your user when you fell like he needs a beautiful explanation.
 class Flash<T> extends StatefulWidget {
   const Flash({
-    Key? key,
+    super.key,
     required this.controller,
     required this.child,
     this.position,
@@ -33,7 +33,7 @@ class Flash<T> extends StatefulWidget {
     this.forwardAnimationCurve = Curves.easeOut,
     this.reverseAnimationCurve = Curves.fastOutSlowIn,
     this.slideAnimationCreator = _defaultSlideAnimationCreator,
-  }) : super(key: key);
+  });
 
   final FlashController<T> controller;
 
@@ -342,7 +342,7 @@ enum _FlingGestureKind { none, forward, reverse }
 
 class FlashBar<T> extends StatefulWidget {
   const FlashBar({
-    Key? key,
+    super.key,
     required this.controller,
     this.position = FlashPosition.bottom,
     this.behavior = FlashBehavior.fixed,
@@ -375,7 +375,7 @@ class FlashBar<T> extends StatefulWidget {
     this.progressIndicatorValueColor,
     this.useSafeArea = true,
     this.builder,
-  }) : super(key: key);
+  });
 
   final FlashController<T> controller;
 
@@ -1091,7 +1091,10 @@ class _DefaultFlashBarTheme extends FlashBarTheme {
   Color? get iconColor => _iconTheme.color;
 
   @override
-  Color? get backgroundColor => _theme.dialogBackgroundColor;
+  Color? get backgroundColor => _theme.colorScheme.surface;
+
+  @override
+  Color? get surfaceTintColor => _theme.colorScheme.surfaceTint;
 
   @override
   Color? get shadowColor => _theme.shadowColor;

@@ -1,3 +1,6 @@
+## [3.1.0] - 2023-11-22
+- Migrate to flutter 3.16.0 .
+
 ## [3.0.5+2] - 2023-10-27
 - Add `onRemoveFromRoute` in `DefaultFlashController`, it only works when `persistent` is false.
 

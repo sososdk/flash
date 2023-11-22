@@ -25,10 +25,10 @@ class Toast extends StatefulWidget {
 
   /// Creates a toast to emit message.
   const Toast({
-    Key? key,
+    super.key,
     required this.child,
     required this.navigatorKey,
-  }) : super(key: key);
+  });
 
   /// Emit a message for the specified duration.
   static Future<T?> show<T>(
@@ -173,7 +173,10 @@ class _DefaultFlashToastTheme extends FlashToastTheme {
   Color? get iconColor => _iconTheme.color;
 
   @override
-  Color? get backgroundColor => _theme.dialogBackgroundColor;
+  Color? get backgroundColor => _theme.colorScheme.surface;
+
+  @override
+  Color? get surfaceTintColor => _theme.colorScheme.surfaceTint;
 
   @override
   Color? get shadowColor => _theme.shadowColor;
@@ -420,20 +423,18 @@ extension ModalFlashShortcuts on BuildContext {
       barrierBlur: barrierBlur,
       barrierCurve: barrierCurve,
       dismissCompleter: dismissCompleter,
-      builder: (context, controller) {
-        return WillPopScope(
-          onWillPop: () => Future.value(false),
-          child: FadeTransition(
-            opacity: controller.controller,
-            child: const Align(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(strokeWidth: 2.0),
-              ),
+      builder: (context, controller) => PopScope(
+        canPop: false,
+        child: FadeTransition(
+          opacity: controller.controller,
+          child: const Align(
+            child: Padding(
+              padding: EdgeInsets.all(16.0),
+              child: CircularProgressIndicator(strokeWidth: 2.0),
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
