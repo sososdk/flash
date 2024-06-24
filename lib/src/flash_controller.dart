@@ -335,7 +335,7 @@ class DefaultFlashController<T> implements FlashController<T> {
 }
 
 class _FlashScope extends StatefulWidget {
-  const _FlashScope({Key? key, required this.controller, required this.child}) : super(key: key);
+  const _FlashScope({required this.controller, required this.child});
 
   final DefaultFlashController controller;
 
@@ -428,9 +428,9 @@ class ModalFlashRoute<T> extends PopupRoute<T> implements FlashController<T> {
     this.barrierLabel,
     this.transitionDuration = const Duration(milliseconds: 250),
     this.reverseTransitionDuration = const Duration(milliseconds: 200),
-    RouteSettings? settings,
+    super.settings,
     this.duration,
-  }) : super(settings: settings);
+  });
 
   final FlashBuilder<T> builder;
 

@@ -1,6 +1,6 @@
 name: flash
 description: A highly customizable, powerful and easy-to-use alerting library for Flutter. 
-version: 3.1.0
+version: 3.1.1
 homepage: https://github.com/sososdk/flash
 
 environment:
@@ -14,7 +14,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lints: ^3.0.0
+  lints: ^4.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

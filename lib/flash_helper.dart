@@ -388,7 +388,7 @@ extension ModalFlashShortcuts on BuildContext {
     RouteSettings? settings,
     bool useRootNavigator = false,
     Duration? duration,
-    Completer<T>? dismissCompleter,
+    @Deprecated('use Navigator.of(context).pop() instead') Completer<T>? dismissCompleter,
   }) {
     final NavigatorState navigator = Navigator.of(this, rootNavigator: useRootNavigator);
     final route = ModalFlashRoute<T>(
@@ -414,7 +414,7 @@ extension ModalFlashShortcuts on BuildContext {
     Color barrierColor = const Color(0x8A000000),
     double? barrierBlur,
     Curve barrierCurve = Curves.ease,
-    Completer<T>? dismissCompleter,
+    @Deprecated('use Navigator.of(context).pop() instead') Completer<T>? dismissCompleter,
   }) {
     return showModalFlash(
       transitionDuration: transitionDuration,

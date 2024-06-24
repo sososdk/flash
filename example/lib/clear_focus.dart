@@ -9,7 +9,7 @@ class ClearFocus extends StatelessWidget {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
-        final focusScope = FocusScope.of(context);
+        // final focusScope = FocusScope.of(context);
 
         // Wrong way
         // focusScope.unfocus();

@@ -38,7 +38,10 @@ class _AppState extends State<App> {
       },
       locale: DevicePreview.locale(context),
       title: 'Flash Demo',
-      theme: ThemeData.light().copyWith(extensions: [FlashToastTheme(), FlashBarTheme()]),
+      theme: ThemeData.light().copyWith(
+        materialTapTargetSize: MaterialTapTargetSize.padded,
+        extensions: [FlashToastTheme(), FlashBarTheme()],
+      ),
       darkTheme: ThemeData.dark(),
       themeMode: ThemeMode.light,
       home: HomePage(title: 'Flash Demo Home Page'),
@@ -416,9 +419,8 @@ class _FlashPageState extends State<FlashPage> {
                       ),
                       ElevatedButton(
                         onPressed: () {
-                          final completer = Completer();
-                          Future.delayed(Duration(seconds: 5)).then((_) => completer.complete());
-                          context.showBlockDialog(dismissCompleter: completer);
+                          Future.delayed(Duration(seconds: 5)).then((_) => Navigator.of(context).pop());
+                          context.showBlockDialog();
                         },
                         child: Text('Block Dialog'),
                       ),

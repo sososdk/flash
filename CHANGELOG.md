@@ -1,3 +1,6 @@
+## [3.1.1]
+- Deprecated dismissCompleter in modal flash.
+
 ## [3.1.0] - 2023-11-22
 - Migrate to flutter 3.16.0 .
 
